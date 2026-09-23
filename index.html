@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +10,8 @@
   <link rel="icon" type="image/jpeg" href="./favicon.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
   <!-- Solana web3.js for building/deserializing swap transactions -->
   <script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
@@ -20,211 +22,250 @@
     }
   </script>
 </head>
+
 <body>
 
   <!-- ── Landing Screen ───────────────────────────────────────────── -->
   <div class="landing" id="landing" style="display:var(--landing-display, '');">
     <canvas class="landing-canvas" id="landingCanvas"></canvas>
 
-    <div class="landing-split">
-      <div class="landing-inner">
-        <!-- Logo -->
-      <div class="landing-logo-wrap">
-        <div class="landing-logo-ring"></div>
-      </div>
+    <div class="landing-inner">
+      <!-- Logo -->
+        <div class="landing-logo-wrap">
+          <div class="landing-logo-ring"></div>
+        </div>
 
-      <!-- Badge -->
-      <div class="landing-badge">
-        <span class="landing-badge-dot"></span>
-        First Interactive Agent on Aqua LaunchPad
-      </div>
+        <!-- Badge -->
+        <div class="landing-badge">
+          <span class="landing-badge-dot"></span>
+          First Interactive Agent on Aqua LaunchPad
+        </div>
 
-      <!-- Title -->
-      <h1 class="landing-title">
-        <span class="landing-title-orca">ORC</span><span class="landing-title-agent">AGENT</span>
-      </h1>
+        <!-- Title -->
+        <h1 class="landing-title">
+          <span class="landing-title-orca">ORC</span><span class="landing-title-agent">AGENT</span>
+        </h1>
 
-      <!-- Typewriter -->
-      <p class="landing-typewriter" id="landingTypewriter"></p>
+        <!-- Typewriter -->
+        <p class="landing-typewriter" id="landingTypewriter"></p>
 
-      <!-- Feature grid -->
-      <div class="landing-features">
-        <div class="landing-feat">
-          <div class="landing-feat-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+        <!-- Story -->
+        <div class="landing-story">
+          <h2 class="story-title">The Apex Predator of Data.</h2>
+          <p>Born from the vast oceans of Solana data, <strong>ORCAGENT</strong> isn't just another bot — it's an intelligent market companion.</p>
+          <p>Built natively on the AQUA Launchpad by Atlantis Studio, OrcAgent swims through millions of blockchain events per second to bring you the signal through the noise. It doesn't just read the market; it understands it.</p>
+          <p>While the rest of the market relies on delayed charts and noisy crowds, you have an intelligent agent that identifies top gainers, executes lightning-fast swaps, and tracks your portfolio seamlessly.</p>
+          <p class="story-kicker">Ask the market. Not the crowd.</p>
+        </div>        <!-- Feature grid -->
+        <div class="landing-features">
+          <div class="landing-feat">
+            <div class="landing-feat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                <polyline points="16 7 22 7 22 13"></polyline>
+              </svg>
+            </div>
+            <div>
+              <p class="landing-feat-label">Live Market Reader</p>
+              <p class="landing-feat-sub">Built directly on the AQUA Launchpad</p>
+            </div>
           </div>
-          <div>
-            <p class="landing-feat-label">Live Market Reader</p>
-            <p class="landing-feat-sub">Built directly on the AQUA Launchpad</p>
+          <div class="landing-feat">
+            <div class="landing-feat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+                <path d="M12 12L2.1 12"></path>
+                <path d="M12 12L19.07 4.93"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="landing-feat-label">Fully Interactive Agent</p>
+              <p class="landing-feat-sub">Chat with OrcAgent for live insights</p>
+            </div>
+          </div>
+          <div class="landing-feat">
+            <div class="landing-feat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+            <div>
+              <p class="landing-feat-label">Direct Token Swaps</p>
+              <p class="landing-feat-sub">Buy and sell AQUA tokens instantly</p>
+            </div>
+          </div>
+          <div class="landing-feat">
+            <div class="landing-feat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+                <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+                <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="landing-feat-label">Smooth, Fast &amp; Easy</p>
+              <p class="landing-feat-sub">Fully functional and community-driven</p>
+            </div>
           </div>
         </div>
-        <div class="landing-feat">
-          <div class="landing-feat-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 12L2.1 12"></path><path d="M12 12L19.07 4.93"></path></svg>
-          </div>
-          <div>
-            <p class="landing-feat-label">Fully Interactive Agent</p>
-            <p class="landing-feat-sub">Chat with OrcAgent for live insights</p>
-          </div>
-        </div>
-        <div class="landing-feat">
-          <div class="landing-feat-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-          </div>
-          <div>
-            <p class="landing-feat-label">Direct Token Swaps</p>
-            <p class="landing-feat-sub">Buy and sell AQUA tokens instantly</p>
-          </div>
-        </div>
-        <div class="landing-feat">
-          <div class="landing-feat-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
-          </div>
-          <div>
-            <p class="landing-feat-label">Smooth, Fast &amp; Easy</p>
-            <p class="landing-feat-sub">Fully functional and community-driven</p>
-          </div>
-        </div>
-      </div>
 
-      <!-- CTAs -->
-      <div class="landing-actions">
-        <button class="landing-enter" data-target="market">
-          <span>Open Market</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-        <button class="landing-enter secondary" data-target="agent">
-          <span>Ask Agent</span>
-        </button>
-        <button class="landing-enter secondary" data-target="portfolio">
-          <span>Portfolio</span>
-        </button>
-      </div>
+        <!-- CTAs -->
+        <div class="landing-actions">
+          <button class="landing-enter" data-target="market">
+            <span>Open Market</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+          <button class="landing-enter secondary" data-target="agent">
+            <span>Ask Agent</span>
+          </button>
+          <button class="landing-enter secondary" data-target="portfolio">
+            <span>Portfolio</span>
+          </button>
+        </div>
 
-      <div class="landing-footer-links">
-        <a href="https://x.com/OrcAgentt" target="_blank" rel="noopener noreferrer" aria-label="X Profile">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        </a>
-      </div>
+        <div class="landing-footer-links">
+          <a href="https://x.com/OrcAgentt" target="_blank" rel="noopener noreferrer" aria-label="X Profile">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+          </a>
+        </div>
 
         <!-- Footer credit -->
         <p class="landing-caption">
-          Built by <strong>Atlantis</strong> &nbsp;·&nbsp; Powered by <strong>ONLY ORCA</strong>
+          Built by <strong>Atlantis</strong> &nbsp;·&nbsp; Powered by <strong>ORCA</strong>
         </p>
       </div>
-
-      <div class="landing-story">
-        <h2 class="story-title">The Apex Predator of Data.</h2>
-        <p>Born from the vast oceans of Solana data, <strong>ORCAGENT</strong> isn't just another bot — it's an intelligent market companion.</p>
-        <p>Built natively on the AQUA Launchpad by Atlantis Studio, OrcAgent swims through millions of blockchain events per second to bring you the signal through the noise. It doesn't just read the market; it understands it.</p>
-        <p>While the rest of the market relies on delayed charts and noisy crowds, you have an intelligent agent that identifies top gainers, executes lightning-fast swaps, and tracks your portfolio seamlessly.</p>
-        <p class="story-kicker">Ask the market. Not the crowd.</p>
-      </div>
-    </div>
   </div>
 
   <!-- ── Main App ─────────────────────────────────────────────── -->
   <div class="app-shell" id="appShell" style="display:var(--landing-display, none)">
 
-  <!-- ── Topbar ──────────────────────────────────────────────────────────── -->
-  <header class="topbar">
-    <a class="wordmark" href="#market" aria-label="ORCAGENT market home">ORCAGENT</a>
-    <p class="strapline">AQUA Launchpad market reader</p>
-    <span class="source-label" id="sourceLabel">Awaiting market</span>
-    <a href="https://x.com/OrcAgentt" target="_blank" rel="noopener noreferrer" class="x-link" aria-label="X Profile">
-      <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-    </a>
-    <button id="walletBtn" class="wallet-btn">Connect Wallet</button>
-  </header>
+    <!-- ── Topbar ──────────────────────────────────────────────────────────── -->
+    <header class="topbar">
+      <a class="wordmark" href="#market" aria-label="ORCAGENT market home">ORCAGENT</a>
+      <p class="strapline">AQUA Launchpad market reader</p>
+      <span class="source-label" id="sourceLabel">Awaiting market</span>
+      <a href="https://x.com/OrcAgentt" target="_blank" rel="noopener noreferrer" class="x-link" aria-label="X Profile">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+      </a>
+      <button id="walletBtn" class="wallet-btn">Connect Wallet</button>
+    </header>
 
-  <!-- ── Nav ────────────────────────────────────────────────────────────── -->
-  <nav class="nav" aria-label="Primary navigation">
-    <button class="nav-link" type="button" data-tab="home" aria-selected="false">Home</button>
-    <button class="nav-link is-active" type="button" data-tab="market" aria-selected="true">Market</button>
-    <button class="nav-link" type="button" data-tab="agent" aria-selected="false">Agent</button>
-    <button class="nav-link" type="button" data-tab="portfolio" aria-selected="false">Portfolio</button>
-  </nav>
+    <!-- ── Nav ────────────────────────────────────────────────────────────── -->
+    <nav class="nav" aria-label="Primary navigation">
+      <button class="nav-link" type="button" data-tab="home" aria-selected="false">Home</button>
+      <button class="nav-link is-active" type="button" data-tab="market" aria-selected="true">Market</button>
+      <button class="nav-link" type="button" data-tab="agent" aria-selected="false">Agent</button>
+      <button class="nav-link" type="button" data-tab="portfolio" aria-selected="false">Portfolio</button>
+    </nav>
 
-  <!-- ── Panels ─────────────────────────────────────────────────────────── -->
-  <main class="page">
+    <!-- ── Panels ─────────────────────────────────────────────────────────── -->
+    <main class="page">
 
-    <!-- ── Market ───────────────────────────────────────────────────────── -->
-    <section class="tab-panel is-active" id="market" aria-labelledby="marketTitle">
-      <div class="intro">
-        <div>
-          <p class="kicker">Live token directory</p>
-          <h1 id="marketTitle">The AQUA Launchpad market.</h1>
-          <p class="section-desc">Every token launched on AQUA Launchpad, live from the blockchain. Prices, market caps, 24h volume, and holder counts — updated in real time. Search any token or browse all 100+ launches.</p>
-        </div>
-        <button class="refresh-button" id="refreshMarket" type="button">Refresh market</button>
-      </div>
-
-      <div class="market-toolbar">
-        <div class="market-state" id="marketState" role="status" aria-live="polite">
-          <span class="state-mark"></span>
-          <p>Reading AQUA Launchpad launches.</p>
-        </div>
-        <label class="search-field" for="marketSearch">
-          <span class="sr-only">Search launches</span>
-          <input id="marketSearch" type="search" autocomplete="off" placeholder="Search name or symbol">
-        </label>
-      </div>
-
-      <div class="market-grid" id="marketGrid" aria-live="polite"></div>
-      <div class="pagination-controls" id="marketPagination" style="display:none"></div>
-      <p class="data-caption">ORCAGENT displays values returned by AQUA Family's public launch directory. A metric remains unavailable when it is not returned for that launch.</p>
-    </section>
-
-    <!-- ── Agent ────────────────────────────────────────────────────────── -->
-    <section class="tab-panel" id="agent" aria-labelledby="agentTitle">
-      <div class="agent-intro">
-        <p class="kicker">AI-powered market reader</p>
-        <h1 id="agentTitle">Ask the market, not the crowd.</h1>
-        <p>ORCAGENT is the first interactive agent on AQUA Launchpad. Ask about any token's price, market cap, volume, or holders. Get buy and sell signals, top gainers, or a full market overview — all in plain English. Say <strong>buy [token]</strong> or <strong>sell [token]</strong> to execute swaps directly in the app, no redirect needed.</p>
-      </div>
-
-      <div class="agent-shell">
-        <div class="quick-reads" aria-label="Quick market reads">
-          <button type="button" data-prompt="how many launches">Launch count</button>
-          <button type="button" data-prompt="largest market cap">Largest market cap</button>
-          <button type="button" data-prompt="highest volume">Highest volume</button>
-          <button type="button" data-prompt="top gainers">Top gainers</button>
-          <button type="button" data-prompt="market status">Market status</button>
-          <button type="button" data-prompt="newest launch">Newest launch</button>
-        </div>
-        <div class="conversation" id="conversation" aria-live="polite">
-          <div class="message agent-message">I'm watching the AQUA Launchpad in real time. Ask me about any token, market stats — or say <strong>buy [symbol]</strong> to swap directly here with any Solana wallet.</div>
-        </div>
-        <form class="ask-form" id="askForm">
-          <label class="sr-only" for="askInput">Ask ORCAGENT about the market</label>
-          <input id="askInput" type="text" autocomplete="off" placeholder="price of AQUA · buy ORCA · top gainers · market status">
-          <button type="submit">Send</button>
-        </form>
-      </div>
-    </section>
-
-    <!-- ── Portfolio ─────────────────────────────────────────────────────── -->
-    <section class="tab-panel" id="portfolio" aria-labelledby="portfolioTitle">
-      <div class="intro">
-        <div>
-          <p class="kicker">Wallet holdings</p>
-          <h1 id="portfolioTitle">Your portfolio.</h1>
-          <p class="section-desc">See all your AQUA Launchpad token holdings in one place. Connect any Solana wallet to view your balances, token values, and positions across every token launched on AQUA.</p>
-        </div>
-        <button id="refreshPortfolio" class="refresh-button" type="button" style="display:none">Refresh</button>
-      </div>
-      <div id="portfolioContent">
-        <div class="connect-prompt">
-          <div class="connect-prompt-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+      <!-- ── Market ───────────────────────────────────────────────────────── -->
+      <section class="tab-panel is-active" id="market" aria-labelledby="marketTitle">
+        <div class="intro">
+          <div>
+            <p class="kicker">Live token directory</p>
+            <h1 id="marketTitle">The AQUA Launchpad market.</h1>
+            <p class="section-desc">Every token launched on AQUA Launchpad, live from the blockchain. Prices, market
+              caps, 24h volume, and holder counts — updated in real time. Search any token or browse all 100+ launches.
+            </p>
           </div>
-          <p>Connect your Phantom wallet to view your AQUA Launchpad token holdings.</p>
-          <button class="wallet-btn" id="portfolioConnectBtn">Connect Wallet</button>
+          <button class="refresh-button" id="refreshMarket" type="button">Refresh market</button>
         </div>
-      </div>
-    </section>
 
-  </main>
+        <div class="market-toolbar">
+          <div class="market-state" id="marketState" role="status" aria-live="polite">
+            <span class="state-mark"></span>
+            <p>Reading AQUA Launchpad launches.</p>
+          </div>
+          <label class="search-field" for="marketSearch">
+            <span class="sr-only">Search launches</span>
+            <input id="marketSearch" type="search" autocomplete="off" placeholder="Search name or symbol">
+          </label>
+        </div>
+
+        <div class="market-grid" id="marketGrid" aria-live="polite"></div>
+        <div class="pagination-controls" id="marketPagination" style="display:none"></div>
+        <p class="data-caption">ORCAGENT displays values returned by AQUA Family's public launch directory. A metric
+          remains unavailable when it is not returned for that launch.</p>
+      </section>
+
+      <!-- ── Agent ────────────────────────────────────────────────────────── -->
+      <section class="tab-panel" id="agent" aria-labelledby="agentTitle">
+        <div class="agent-intro">
+          <p class="kicker">AI-powered market reader</p>
+          <h1 id="agentTitle">Ask the market, not the crowd.</h1>
+          <p>ORCAGENT is the first interactive agent on AQUA Launchpad. Ask about any token's price, market cap, volume,
+            or holders. Get buy and sell signals, top gainers, or a full market overview — all in plain English. Say
+            <strong>buy [token]</strong> or <strong>sell [token]</strong> to execute swaps directly in the app, no
+            redirect needed.
+          </p>
+        </div>
+
+        <div class="agent-shell">
+          <div class="quick-reads" aria-label="Quick market reads">
+            <button type="button" data-prompt="how many launches">Launch count</button>
+            <button type="button" data-prompt="largest market cap">Largest market cap</button>
+            <button type="button" data-prompt="highest volume">Highest volume</button>
+            <button type="button" data-prompt="top gainers">Top gainers</button>
+            <button type="button" data-prompt="market status">Market status</button>
+            <button type="button" data-prompt="newest launch">Newest launch</button>
+          </div>
+          <div class="conversation" id="conversation" aria-live="polite">
+            <div class="message agent-message">I'm watching the AQUA Launchpad in real time. Ask me about any token,
+              market stats — or say <strong>buy [symbol]</strong> to swap directly here with any Solana wallet.</div>
+          </div>
+          <form class="ask-form" id="askForm">
+            <label class="sr-only" for="askInput">Ask ORCAGENT about the market</label>
+            <input id="askInput" type="text" autocomplete="off"
+              placeholder="price of AQUA · buy ORCA · top gainers · market status">
+            <button type="submit">Send</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ── Portfolio ─────────────────────────────────────────────────────── -->
+      <section class="tab-panel" id="portfolio" aria-labelledby="portfolioTitle">
+        <div class="intro">
+          <div>
+            <p class="kicker">Wallet holdings</p>
+            <h1 id="portfolioTitle">Your portfolio.</h1>
+            <p class="section-desc">See all your AQUA Launchpad token holdings in one place. Connect any Solana wallet
+              to view your balances, token values, and positions across every token launched on AQUA.</p>
+          </div>
+          <button id="refreshPortfolio" class="refresh-button" type="button" style="display:none">Refresh</button>
+        </div>
+        <div id="portfolioContent">
+          <div class="connect-prompt">
+            <div class="connect-prompt-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+                <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+                <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+              </svg>
+            </div>
+            <p>Connect your Phantom wallet to view your AQUA Launchpad token holdings.</p>
+            <button class="wallet-btn" id="portfolioConnectBtn">Connect Wallet</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
   </div><!-- /app-shell -->
 
 
@@ -236,14 +277,14 @@
   <!-- Landing: particles + typewriter -->
   <script>
     // ── Particle Canvas ──────────────────────────────────────────────────────
-    (function() {
+    (function () {
       const canvas = document.getElementById('landingCanvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       let W, H, particles = [];
 
       function resize() {
-        W = canvas.width  = window.innerWidth;
+        W = canvas.width = window.innerWidth;
         H = canvas.height = window.innerHeight;
       }
       window.addEventListener('resize', resize);
@@ -267,10 +308,10 @@
         ctx.clearRect(0, 0, W, H);
 
         // Radial aqua glow from center
-        const grd = ctx.createRadialGradient(W/2, H*0.35, 0, W/2, H*0.35, W*0.55);
-        grd.addColorStop(0,   `rgba(${AQUA}, 0.13)`);
+        const grd = ctx.createRadialGradient(W / 2, H * 0.35, 0, W / 2, H * 0.35, W * 0.55);
+        grd.addColorStop(0, `rgba(${AQUA}, 0.13)`);
         grd.addColorStop(0.5, `rgba(${AQUA}, 0.04)`);
-        grd.addColorStop(1,   `rgba(${AQUA}, 0)`);
+        grd.addColorStop(1, `rgba(${AQUA}, 0)`);
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, W, H);
 
@@ -290,7 +331,7 @@
           for (let j = i + 1; j < particles.length; j++) {
             const dx = (particles[i].x - particles[j].x) * W;
             const dy = (particles[i].y - particles[j].y) * H;
-            const dist = Math.sqrt(dx*dx + dy*dy);
+            const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < 120) {
               ctx.beginPath();
               ctx.moveTo(particles[i].x * W, particles[i].y * H);
@@ -307,7 +348,7 @@
     })();
 
     // ── Typewriter ───────────────────────────────────────────────────────────
-    (function() {
+    (function () {
       const el = document.getElementById('landingTypewriter');
       if (!el) return;
       const lines = [
@@ -333,4 +374,5 @@
     })();
   </script>
 </body>
+
 </html>
