@@ -944,13 +944,24 @@
   });
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
-  $$('.nav-link').forEach(btn => {
+  $$('.nav-link').forEach(btn =>
     btn.addEventListener('click', () => {
+      if (btn.dataset.tab === 'home') {
+        // Show landing overlay
+        const landing  = $('landing');
+        const appShell = $('appShell');
+        if (landing && appShell) {
+          landing.style.display = '';
+          landing.classList.remove('is-hidden');
+          appShell.style.display = 'none';
+        }
+        return;
+      }
       $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b === btn); b.setAttribute('aria-selected', b === btn); });
       $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === btn.dataset.tab));
       localStorage.setItem('orca_tab', btn.dataset.tab);
-    });
-  });
+    })
+  );
 
   // ── Event wiring ──────────────────────────────────────────────────────────
   $('refreshMarket')?.addEventListener('click', loadMarkets);
@@ -1009,13 +1020,19 @@
   const hasVisited = localStorage.getItem('orca_visited');
 
   function enterApp() {
-    landing.classList.add('is-hidden');
     appShell.style.display = '';
+    landing.classList.add('is-hidden');
     localStorage.setItem('orca_visited', '1');
+    // Restore last tab or default to market
+    const lastTab = localStorage.getItem('orca_tab') || 'market';
+    const targetBtn = document.querySelector(`.nav-link[data-tab="${lastTab}"]`);
+    if (targetBtn) {
+      $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b === targetBtn); b.setAttribute('aria-selected', b === targetBtn); });
+      $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === lastTab));
+    }
   }
 
   if (hasVisited) {
-    // Skip landing for returning visitors
     landing.style.display = 'none';
     appShell.style.display = '';
   } else {
