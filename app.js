@@ -136,7 +136,7 @@
     $('buyModalInitials').textContent = symbol.slice(0, 4);
     $('buyModalName').textContent     = name;
     $('buyModalPrice').textContent    = price || '';
-    const link = mint ? `${AQUA_SITE}/trade/${mint}` : AQUA_SITE;
+    const link = mint ? `${AQUA_SITE}/#/launch/${mint}` : `${AQUA_SITE}/#/`;
     $('buyModalLink').href = link;
     $('buyModal').hidden  = false;
     document.body.style.overflow = 'hidden';
@@ -290,7 +290,7 @@
 
   function makeBuyLink(launch) {
     const mint = launch.mint || '';
-    const url  = mint ? `${AQUA_SITE}/trade/${mint}` : AQUA_SITE;
+    const url  = mint ? `${AQUA_SITE}/#/launch/${mint}` : `${AQUA_SITE}/#/`;
     const a = document.createElement('a');
     a.className = 'buy-inline-btn';
     a.href = url;
