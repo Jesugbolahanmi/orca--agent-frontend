@@ -4,23 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#10100f">
-  <meta name="description" content="ORCAGENT reads the public AQUA Launchpad market directory.">
+  <meta name="description" content="ORCAGENT — Browse, monitor, and trade every token on the AQUA Launchpad.">
   <title>ORCAGENT | AQUA Launchpad Markets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+
+  <!-- ── Topbar ──────────────────────────────────────────────────────────── -->
   <header class="topbar">
     <a class="wordmark" href="#market" aria-label="ORCAGENT market home">ORCAGENT</a>
     <p class="strapline">AQUA Launchpad market reader</p>
     <span class="source-label" id="sourceLabel">Awaiting market</span>
+    <button id="walletBtn" class="wallet-btn">Connect Wallet</button>
   </header>
 
+  <!-- ── Nav ────────────────────────────────────────────────────────────── -->
   <nav class="nav" aria-label="Primary navigation">
     <button class="nav-link is-active" type="button" data-tab="market" aria-selected="true">Market</button>
     <button class="nav-link" type="button" data-tab="agent" aria-selected="false">Agent</button>
+    <button class="nav-link" type="button" data-tab="portfolio" aria-selected="false">Portfolio</button>
   </nav>
 
+  <!-- ── Panels ─────────────────────────────────────────────────────────── -->
   <main class="page">
+
+    <!-- ── Market ───────────────────────────────────────────────────────── -->
     <section class="tab-panel is-active" id="market" aria-labelledby="marketTitle">
       <div class="intro">
         <div>
@@ -42,14 +53,15 @@
       </div>
 
       <div class="market-grid" id="marketGrid" aria-live="polite"></div>
-      <p class="data-caption">ORCAGENT displays values returned by AQUA Family’s public launch directory. A metric remains unavailable when it is not returned for that launch.</p>
+      <p class="data-caption">ORCAGENT displays values returned by AQUA Family's public launch directory. A metric remains unavailable when it is not returned for that launch.</p>
     </section>
 
+    <!-- ── Agent ────────────────────────────────────────────────────────── -->
     <section class="tab-panel" id="agent" aria-labelledby="agentTitle">
       <div class="agent-intro">
         <p class="kicker">Market reader</p>
         <h1 id="agentTitle">Ask the market, not the crowd.</h1>
-        <p>ORCAGENT reads the currently loaded AQUA Launchpad directory. It does not fill missing figures with a guess.</p>
+        <p>ORCAGENT reads the live AQUA Launchpad directory. Type a token name, ask for stats, or say <strong>buy ORCA</strong> to trade on AQUA Family.</p>
       </div>
 
       <div class="agent-shell">
@@ -57,22 +69,59 @@
           <button type="button" data-prompt="how many launches">Launch count</button>
           <button type="button" data-prompt="largest market cap">Largest market cap</button>
           <button type="button" data-prompt="highest volume">Highest volume</button>
+          <button type="button" data-prompt="top gainers">Top gainers</button>
           <button type="button" data-prompt="market status">Market status</button>
         </div>
         <div class="conversation" id="conversation" aria-live="polite">
-          <div class="message agent-message">I am loading the AQUA Launchpad directory. Ask me about a listed token, launch count, market cap, volume, holders, or market status.</div>
+          <div class="message agent-message">I'm watching the AQUA Launchpad in real time. Ask me about any token, market stats — or say <strong>buy [symbol]</strong> to open the trade on AQUA Family.</div>
         </div>
         <form class="ask-form" id="askForm">
           <label class="sr-only" for="askInput">Ask ORCAGENT about the market</label>
-          <input id="askInput" type="text" autocomplete="off" placeholder="Ask about a token, volume, holders, or status">
-          <button type="submit">Ask</button>
+          <input id="askInput" type="text" autocomplete="off" placeholder="price of ORCA · buy AQUA · top gainers">
+          <button type="submit">Send</button>
         </form>
       </div>
     </section>
+
+    <!-- ── Portfolio ─────────────────────────────────────────────────────── -->
+    <section class="tab-panel" id="portfolio" aria-labelledby="portfolioTitle">
+      <div class="intro">
+        <div>
+          <p class="kicker">Your holdings</p>
+          <h1 id="portfolioTitle">Portfolio.</h1>
+        </div>
+        <button id="refreshPortfolio" class="refresh-button" type="button" style="display:none">Refresh</button>
+      </div>
+      <div id="portfolioContent">
+        <div class="connect-prompt">
+          <div class="connect-prompt-icon">◎</div>
+          <p>Connect your Phantom wallet to see your AQUA Launchpad holdings.</p>
+          <button class="wallet-btn" id="portfolioConnectBtn">Connect Wallet</button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
+  <!-- ── Buy Modal ──────────────────────────────────────────────────────── -->
+  <div id="buyModal" class="buy-modal" hidden aria-modal="true" role="dialog" aria-labelledby="buyModalTitle">
+    <div class="buy-modal-card">
+      <button class="buy-modal-close" id="buyModalClose" aria-label="Close">✕</button>
+      <div class="buy-modal-token" id="buyModalToken">
+        <div class="buy-modal-initials" id="buyModalInitials">—</div>
+        <div>
+          <div class="buy-modal-name" id="buyModalName">Token</div>
+          <div class="buy-modal-price" id="buyModalPrice"></div>
+        </div>
+      </div>
+      <h2 id="buyModalTitle" class="buy-modal-title">Trade on AQUA Family</h2>
+      <p class="buy-modal-desc">This will open the AQUA Family launchpad for this token where you can swap using your connected wallet.</p>
+      <a id="buyModalLink" class="buy-confirm-btn" target="_blank" rel="noopener">Open AQUA Family →</a>
+    </div>
+  </div>
+
   <script src="./config.js"></script>
-<script src="./env.js"></script>
-<script src="./app.js" defer></script>
+  <script src="./env.js"></script>
+  <script src="./app.js" defer></script>
 </body>
 </html>
