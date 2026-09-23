@@ -22,6 +22,8 @@
   let walletAddr  = null;
   let loadingMkt  = false;
   let loadingPort = false;
+  let chatHistory = JSON.parse(localStorage.getItem('orca_chat') || '[]');
+  let pendingBuyTarget = null;
 
   // ── Status ────────────────────────────────────────────────────────────────
   function setStatus(text, kind = '') {
@@ -116,17 +118,10 @@
           <div><dt>Vol 24h</dt><dd>${dollars(vol)}</dd></div>
           <div><dt>Holders</dt><dd>${holders !== null ? Number(holders).toLocaleString() : 'n/a'}</dd></div>
         </dl>
-        <button class="card-buy-btn" data-id="${launch.id}">Buy ${symbol} →</button>
+        <a class="card-buy-btn" href="https://aquafamily.fun/#/token/${launch.id}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;text-align:center;box-sizing:border-box;">View Market ↗</a>
       `;
       grid.appendChild(card);
     }
-
-    grid.querySelectorAll('.card-buy-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const launch = allLaunches.find(l => l.id === btn.dataset.id);
-        if (launch) triggerBuyFlow(launch, 0.1);
-      });
-    });
   }
 
   // ── Swap Quote Flow ────────────────────────────────────────────────────────
@@ -161,7 +156,7 @@
       const impact    = parseFloat(quote.priceImpactPct || 0);
       const impactPct = (impact < 0.01 ? '<0.01' : impact.toFixed(2)) + '%';
 
-      // Build the inline swap card
+      // Build the inline swap card (we do not save this in chatHistory)
       const card   = document.createElement('div');
       const btnId  = 'scb_' + Date.now();
       card.className = 'swap-quote-card';
@@ -178,7 +173,7 @@
         <button class="swap-confirm-btn" id="${btnId}">⚡ Confirm Swap in Wallet</button>
       `;
 
-      addMessage('', 'agent', card);
+      addMessage('', 'agent', card, false);
 
       document.getElementById(btnId).addEventListener('click', async function () {
         if (!walletAddr) {
@@ -270,6 +265,7 @@
   function disconnectWallet() {
     window.solana?.disconnect?.();
     walletAddr = null;
+    localStorage.removeItem('orca_wallet');
     onWalletDisconnected();
   }
 
@@ -317,7 +313,7 @@
     if (grid) grid.innerHTML = '<p class="portfolio-empty">Loading holdings…</p>';
 
     try {
-      const res = await fetch(`${AQUA_API}/api/wallets/${encodeURIComponent(walletAddr)}/holdings`);
+      const res = await fetch(`${AQUA_API}/api/wallets/${encodeURIComponent(walletAddr)}/holdings?_t=${Date.now()}`);
       if (!res.ok) throw new Error(`API ${res.status}`);
       const data = await res.json();
       const holdings = data.holdings || data || [];
@@ -370,21 +366,29 @@
         $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b.dataset.tab === 'agent'); b.setAttribute('aria-selected', b.dataset.tab === 'agent'); });
         $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'agent'));
         addMessage(`buy ${name}`, 'user');
-        setTimeout(() => triggerBuyFlow(launchObj, 0.1), 200);
+        pendingBuyTarget = launchObj;
+        setTimeout(() => {
+          addMessage(`How much SOL worth of ${symbol} would you like to buy? (e.g., 0.1)\nType "cancel" to abort.`, 'agent');
+        }, 220);
       });
       grid.appendChild(card);
     }
   }
 
   // ── Agent ─────────────────────────────────────────────────────────────────
-  function addMessage(text, role, extra = null) {
+  function addMessage(text, role, extra = null, save = true) {
     const feed = $('conversation');
     const div  = document.createElement('div');
     div.className = 'message ' + (role === 'user' ? 'user-message' : 'agent-message');
-    div.textContent = text;
+    div.innerHTML = text.replace(/\n/g, '<br>');
     if (extra) div.appendChild(extra);
     feed.appendChild(div);
     feed.scrollTop = feed.scrollHeight;
+    
+    if (save && text) {
+      chatHistory.push({ text, role });
+      localStorage.setItem('orca_chat', JSON.stringify(chatHistory));
+    }
   }
 
   function makeBuyLink(launch) {
@@ -392,7 +396,13 @@
     const btn = document.createElement('button');
     btn.className = 'buy-inline-btn';
     btn.textContent = `⚡ Swap ${symbol} now`;
-    btn.addEventListener('click', () => triggerBuyFlow(launch, 0.1));
+    btn.addEventListener('click', () => {
+      addMessage(`buy ${symbol}`, 'user');
+      pendingBuyTarget = launch;
+      setTimeout(() => {
+        addMessage(`How much SOL worth of ${symbol} would you like to buy? (e.g., 0.1)\nType "cancel" to abort.`, 'agent');
+      }, 220);
+    });
     return btn;
   }
 
@@ -403,21 +413,46 @@
       return { text: 'Market data is still loading. Please try again in a moment.', link: null };
     }
 
+    if (pendingBuyTarget) {
+      const solAmount = parseFloat(q);
+      if (q === 'cancel' || q === 'stop') {
+        pendingBuyTarget = null;
+        return { text: 'Buy cancelled. What else can I help you with?', link: null };
+      }
+      if (!isNaN(solAmount) && solAmount > 0) {
+        const launch = pendingBuyTarget;
+        pendingBuyTarget = null;
+        setTimeout(() => triggerBuyFlow(launch, solAmount), 300);
+        return { text: `Getting a quote for ${solAmount} SOL → ${(launch.symbol || '').toUpperCase()}…`, link: null };
+      } else {
+        return { text: 'Please enter a valid amount in SOL (e.g., 0.1), or type "cancel".', link: null };
+      }
+    }
+
     // Buy intent — supports: "buy aqua", "buy $aqua", "buy 0.5 sol of aqua"
     const buyMatch = q.match(/^buy\s+(?:(\d+\.?\d*)\s+sol\s+(?:of\s+)?)?\$?(.+)/);
     if (buyMatch) {
-      const solAmount = parseFloat(buyMatch[1]) || 0.1;
+      const amountStr = buyMatch[1];
       const target    = buyMatch[2].trim();
       const launch    = allLaunches.find(l =>
         (l.symbol || '').toLowerCase() === target ||
         (l.name   || '').toLowerCase().includes(target)
       );
       if (launch) {
-        setTimeout(() => triggerBuyFlow(launch, solAmount), 300);
-        return {
-          text: `Getting a quote for ${solAmount} SOL → ${(launch.symbol || '').toUpperCase()}…`,
-          link: null,
-        };
+        if (amountStr) {
+          const solAmount = parseFloat(amountStr);
+          setTimeout(() => triggerBuyFlow(launch, solAmount), 300);
+          return {
+            text: `Getting a quote for ${solAmount} SOL → ${(launch.symbol || '').toUpperCase()}…`,
+            link: null,
+          };
+        } else {
+          pendingBuyTarget = launch;
+          return {
+            text: `How much SOL worth of ${(launch.symbol || '').toUpperCase()} would you like to buy? (e.g., 0.1)\nType "cancel" to abort.`,
+            link: null
+          };
+        }
       }
       return {
         text: `I couldn't find "${target}". Check the spelling or browse the Market tab.`,
@@ -507,14 +542,36 @@
   });
   $('portfolioConnectBtn')?.addEventListener('click', connectWallet);
 
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  if (!chatHistory.length) {
+    chatHistory.push({ text: "I'm watching the AQUA Launchpad in real time. Ask me about any token, market stats — or say <strong>buy [symbol]</strong> to swap directly here with any Solana wallet.", role: 'agent' });
+  }
+  const feed = $('conversation');
+  if (feed) {
+    feed.innerHTML = '';
+    chatHistory.forEach(msg => {
+      const div = document.createElement('div');
+      div.className = 'message ' + (msg.role === 'user' ? 'user-message' : 'agent-message');
+      div.innerHTML = msg.text.replace(/\n/g, '<br>');
+      feed.appendChild(div);
+    });
+    feed.scrollTop = feed.scrollHeight;
+  }
+
+  const savedWallet = localStorage.getItem('orca_wallet');
+  if (savedWallet) {
+    walletAddr = savedWallet;
+    onWalletConnected();
+  }
+
   // Auto-reconnect if wallet is already trusted
-  if (window.solana?.isPhantom && window.solana.isConnected) {
+  if (window.solana?.isPhantom) {
     window.solana.connect({ onlyIfTrusted: true }).then(resp => {
       walletAddr = resp.publicKey.toString();
+      localStorage.setItem('orca_wallet', walletAddr);
       onWalletConnected();
     }).catch(() => {});
   }
 
-  // ── Boot ──────────────────────────────────────────────────────────────────
   loadMarkets();
 })();
