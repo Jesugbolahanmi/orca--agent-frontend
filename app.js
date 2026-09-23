@@ -235,6 +235,59 @@
     }
   }
 
+  // ── Balance Check Flow ─────────────────────────────────────────────────────
+  async function triggerBalanceFlow(launch, tokenNameStr) {
+    if (!walletAddr) {
+      addMessage("You need to connect your wallet first (top-right) to check your balances.", "agent");
+      return;
+    }
+    
+    // Check if the user is asking about SOL
+    if (tokenNameStr.toLowerCase() === 'sol' || tokenNameStr.toLowerCase() === 'solana') {
+      try {
+        const res = await fetch(`${AQUA_API}/api/wallets/${encodeURIComponent(walletAddr)}/holdings?_t=${Date.now()}`);
+        if (res.ok) {
+          const data = await res.json();
+          const solHolding = data.solBalance; // the API might return solBalance, or we just fallback
+          if (solHolding !== undefined) {
+             addMessage(`You currently have **${Number(solHolding).toFixed(4)} SOL** in your wallet.`, "agent");
+             return;
+          }
+        }
+      } catch (err) { console.error(err); }
+      addMessage("I can check AQUA Launchpad token balances. Check your wallet extension for your SOL balance.", "agent");
+      return;
+    }
+
+    if (!launch) {
+      addMessage(`I couldn't find "${tokenNameStr}" on the AQUA Launchpad to check your balance.`, "agent");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${AQUA_API}/api/wallets/${encodeURIComponent(walletAddr)}/holdings?_t=${Date.now()}`);
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      const holdings = data.holdings || data || [];
+      const holding = holdings.find(h => (h.mint || '').toLowerCase() === (launch.mint || '').toLowerCase());
+      
+      const symbol = (launch.symbol || 'TOKEN').toUpperCase();
+      
+      if (!holding || !holding.amount || holding.amount <= 0) {
+        addMessage(`You don't currently hold any **${symbol}** in this wallet.`, "agent");
+        return;
+      }
+      
+      const amtDisplay = Number(holding.amount).toLocaleString('en-US', { maximumFractionDigits: 4 });
+      const valDisplay = holding.valueUsd ? ` (worth ${dollars(holding.valueUsd)})` : '';
+      
+      addMessage(`You are currently holding **${amtDisplay} ${symbol}**${valDisplay}.`, "agent");
+    } catch (err) {
+      console.error(err);
+      addMessage(`Sorry, I couldn't fetch your wallet balance right now.`, "agent");
+    }
+  }
+
   // ── Swap Quote Flow (Buy) ──────────────────────────────────────────────────
   // Calls Jupiter via our Vercel proxy (avoids CORS), shows an inline quote card.
   async function triggerBuyFlow(launch, solAmount) {
@@ -659,6 +712,16 @@
     }
     if (/\b(good|nice|great|awesome|cool|love it|love this|amazing)\b/.test(q) && q.length < 30) {
       return { text: `Glad to help! 🚀 The AQUA Launchpad is moving fast — stay sharp. Anything else?`, link: null };
+    }
+
+    // ── Balance intent — "how many aqua am i holding", "what is my sol balance" ──
+    const balMatch = q.match(/^(?:how\s+many|how\s+much|what\s+(?:is|are)\s+my|show\s+my)\s+\$?(?:of\s+)?([a-z0-9]+)\s*(?:am\s+i\s+holding|do\s+i\s+have|do\s+i\s+hold|balance|tokens?)?\b/i) 
+                  || q.match(/^([a-z0-9]+)\s+balance\b/i);
+    if (balMatch) {
+      const targetStr = (balMatch[1] || balMatch[2]).trim();
+      const launch = findToken(targetStr);
+      setTimeout(() => triggerBalanceFlow(launch, targetStr), 300);
+      return { text: `Checking your wallet balance for ${launch ? (launch.symbol || '').toUpperCase() : targetStr.toUpperCase()}...`, link: null };
     }
 
     // ── Buy intent — supports: "buy aqua", "buy $aqua", "buy 0.5 sol of aqua" ──
