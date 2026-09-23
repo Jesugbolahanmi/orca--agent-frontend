@@ -1043,11 +1043,14 @@
     }).catch(() => {});
   }
 
-  // Restore active tab
+  // Restore active tab (skip 'home' — that's the landing overlay, not a real panel)
   const activeTab = localStorage.getItem('orca_tab');
-  if (activeTab) {
+  if (activeTab && activeTab !== 'home') {
     const targetBtn = document.querySelector(`.nav-link[data-tab="${activeTab}"]`);
-    if (targetBtn) targetBtn.click();
+    if (targetBtn) {
+      $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b === targetBtn); b.setAttribute('aria-selected', b === targetBtn); });
+      $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === activeTab));
+    }
   }
 
   loadMarkets();
@@ -1059,15 +1062,19 @@
   const hasVisited = localStorage.getItem('orca_visited');
 
   function enterApp() {
+    // Show the app shell and hide landing
     appShell.style.display = '';
+    landing.style.display = 'none';
     landing.classList.add('is-hidden');
     localStorage.setItem('orca_visited', '1');
     // Restore last tab or default to market
     const lastTab = localStorage.getItem('orca_tab') || 'market';
-    const targetBtn = document.querySelector(`.nav-link[data-tab="${lastTab}"]`);
-    if (targetBtn) {
-      $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b === targetBtn); b.setAttribute('aria-selected', b === targetBtn); });
-      $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === lastTab));
+    if (lastTab !== 'home') {
+      const targetBtn = document.querySelector(`.nav-link[data-tab="${lastTab}"]`);
+      if (targetBtn) {
+        $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b === targetBtn); b.setAttribute('aria-selected', b === targetBtn); });
+        $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === lastTab));
+      }
     }
   }
 

@@ -215,6 +215,14 @@ h1 {
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+.section-desc {
+  max-width: 600px;
+  margin-top: 16px;
+  color: var(--quiet);
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 500;
+}
 
 /* ────────────────────────────────────────────────────────────────────────────
    BUTTONS (generic)
@@ -1003,8 +1011,9 @@ dd {
   .page { padding: 24px 16px; }
 
   /* Intro header */
-  .intro { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .intro { align-items: flex-start; flex-direction: column; gap: 12px; margin-bottom: 24px; }
   .intro h1 { font-size: clamp(1.4rem, 6vw, 2rem); }
+  .section-desc { font-size: 13px; margin-top: 12px; }
   .refresh-button { width: 100%; text-align: center; }
 
   /* Market toolbar */

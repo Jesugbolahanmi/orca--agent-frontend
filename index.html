@@ -13,11 +13,17 @@
   <link rel="stylesheet" href="./styles.css">
   <!-- Solana web3.js for building/deserializing swap transactions -->
   <script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
+  <!-- Immediately hide landing for returning visitors to prevent flash -->
+  <script>
+    if (localStorage.getItem('orca_visited')) {
+      document.documentElement.style.setProperty('--landing-display', 'none');
+    }
+  </script>
 </head>
 <body>
 
   <!-- ── Landing Screen ───────────────────────────────────────────── -->
-  <div class="landing" id="landing">
+  <div class="landing" id="landing" style="display:var(--landing-display, '');">
     <canvas class="landing-canvas" id="landingCanvas"></canvas>
 
     <div class="landing-inner">
@@ -94,7 +100,7 @@
   </div>
 
   <!-- ── Main App ─────────────────────────────────────────────── -->
-  <div class="app-shell" id="appShell" style="display:none">
+  <div class="app-shell" id="appShell" style="display:var(--landing-display, none)">
 
   <!-- ── Topbar ──────────────────────────────────────────────────────────── -->
   <header class="topbar">
@@ -122,8 +128,9 @@
     <section class="tab-panel is-active" id="market" aria-labelledby="marketTitle">
       <div class="intro">
         <div>
-          <p class="kicker">Public launch directory</p>
+          <p class="kicker">Live token directory</p>
           <h1 id="marketTitle">The AQUA Launchpad market.</h1>
+          <p class="section-desc">Every token launched on AQUA Launchpad, live from the blockchain. Prices, market caps, 24h volume, and holder counts — updated in real time. Search any token or browse all 100+ launches.</p>
         </div>
         <button class="refresh-button" id="refreshMarket" type="button">Refresh market</button>
       </div>
@@ -147,9 +154,9 @@
     <!-- ── Agent ────────────────────────────────────────────────────────── -->
     <section class="tab-panel" id="agent" aria-labelledby="agentTitle">
       <div class="agent-intro">
-        <p class="kicker">Market reader</p>
+        <p class="kicker">AI-powered market reader</p>
         <h1 id="agentTitle">Ask the market, not the crowd.</h1>
-        <p>ORCAGENT reads the live AQUA Launchpad directory. Type a token name, ask for stats, or say <strong>buy [token]</strong> to swap directly in the app — no redirect needed.</p>
+        <p>ORCAGENT is the first interactive agent on AQUA Launchpad. Ask about any token's price, market cap, volume, or holders. Get buy and sell signals, top gainers, or a full market overview — all in plain English. Say <strong>buy [token]</strong> or <strong>sell [token]</strong> to execute swaps directly in the app, no redirect needed.</p>
       </div>
 
       <div class="agent-shell">
@@ -159,13 +166,14 @@
           <button type="button" data-prompt="highest volume">Highest volume</button>
           <button type="button" data-prompt="top gainers">Top gainers</button>
           <button type="button" data-prompt="market status">Market status</button>
+          <button type="button" data-prompt="newest launch">Newest launch</button>
         </div>
         <div class="conversation" id="conversation" aria-live="polite">
           <div class="message agent-message">I'm watching the AQUA Launchpad in real time. Ask me about any token, market stats — or say <strong>buy [symbol]</strong> to swap directly here with any Solana wallet.</div>
         </div>
         <form class="ask-form" id="askForm">
           <label class="sr-only" for="askInput">Ask ORCAGENT about the market</label>
-          <input id="askInput" type="text" autocomplete="off" placeholder="price of ORCA · buy AQUA · top gainers">
+          <input id="askInput" type="text" autocomplete="off" placeholder="price of AQUA · buy ORCA · top gainers · market status">
           <button type="submit">Send</button>
         </form>
       </div>
@@ -175,8 +183,9 @@
     <section class="tab-panel" id="portfolio" aria-labelledby="portfolioTitle">
       <div class="intro">
         <div>
-          <p class="kicker">Your holdings</p>
-          <h1 id="portfolioTitle">Portfolio.</h1>
+          <p class="kicker">Wallet holdings</p>
+          <h1 id="portfolioTitle">Your portfolio.</h1>
+          <p class="section-desc">See all your AQUA Launchpad token holdings in one place. Connect any Solana wallet to view your balances, token values, and positions across every token launched on AQUA.</p>
         </div>
         <button id="refreshPortfolio" class="refresh-button" type="button" style="display:none">Refresh</button>
       </div>
@@ -185,7 +194,7 @@
           <div class="connect-prompt-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
           </div>
-          <p>Connect your Phantom wallet to see your AQUA Launchpad holdings.</p>
+          <p>Connect your Phantom wallet to view your AQUA Launchpad token holdings.</p>
           <button class="wallet-btn" id="portfolioConnectBtn">Connect Wallet</button>
         </div>
       </div>
