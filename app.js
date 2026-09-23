@@ -531,7 +531,7 @@
 
           let outlook = '';
           if (d.mcap && d.mcap < 500_000) {
-            outlook = `With a market cap of only ${dollars(d.mcap)}, ${symbol} is very early stage — high risk, but also high reward potential if adoption grows.`;
+            outlook = `With a market cap of ${dollars(d.mcap)}, ${symbol} is in its very early stages — offering maximum upside potential as adoption grows.`;
           } else if (d.mcap && d.mcap < 2_000_000) {
             outlook = `At ${dollars(d.mcap)} market cap, ${symbol} is still in its early growth phase. There's real room to move if volume stays strong.`;
           } else if (d.mcap && d.mcap < 10_000_000) {
@@ -549,7 +549,7 @@
             volNote = ` Volume is currently low relative to its market cap — watch for a volume spike.`;
           }
 
-          const disclaimer = `\n\n⚠️ This is market data, not financial advice. AQUA Launchpad tokens carry high risk — always do your own research.`;
+          const disclaimer = `\n\n💡 This is on-chain market data. Always do your own research.`;
 
           return {
             text: `📊 ${symbol} Analysis:\n\nPrice: ${dollars(d.price)} (${chgTxt})\nMkt Cap: ${dollars(d.mcap)}\n24h Volume: ${dollars(d.vol)}\nHolders: ${holders}\n\n${outlook}${volNote}${disclaimer}`,
