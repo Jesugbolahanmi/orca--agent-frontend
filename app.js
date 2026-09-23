@@ -136,7 +136,11 @@
   // ── Swap Quote Flow ────────────────────────────────────────────────────────
   // Calls Jupiter via our Vercel proxy (avoids CORS), shows an inline quote card.
   async function triggerBuyFlow(launch, solAmount) {
-    const symbol = (launch.symbol || 'TOKEN').toUpperCase();
+    const symbol    = (launch.symbol || 'TOKEN').toUpperCase();
+    const aquaUrl   = `https://aquafamily.fun/#/token/${launch.id || launch.mint}`;
+    const orcaUrl   = launch.whirlpoolAddress
+      ? `https://www.orca.so/pools/${launch.whirlpoolAddress}`
+      : null;
 
     if (!launch.mint) {
       addMessage(`No mint address found for ${symbol}. Cannot get a quote.`, 'agent');
@@ -153,12 +157,44 @@
         `&amount=${lamports}` +
         `&slippageBps=50`
       );
-      if (!quoteRes.ok) throw new Error(`Quote API returned ${quoteRes.status}`);
+
+      // If Jupiter can't route this token (common for AQUA Launchpad CLMM tokens),
+      // give the user a helpful fallback instead of a raw error.
+      if (!quoteRes.ok) {
+        let errDetail = '';
+        try {
+          const errBody = await quoteRes.json();
+          errDetail = errBody.error || errBody.message || '';
+        } catch (_) { /* body not JSON */ }
+
+        if (quoteRes.status === 400) {
+          // Build a fallback card pointing to AQUA / Orca directly
+          const card = document.createElement('div');
+          card.className = 'swap-quote-card swap-quote-no-route';
+          card.innerHTML = `
+            <div class="swap-no-route-icon">⚠️</div>
+            <p class="swap-no-route-msg">
+              <strong>No Jupiter route found for ${symbol}.</strong><br>
+              ${symbol} trades in an Orca CLMM pool that Jupiter doesn't currently index.
+              You can swap it directly on AQUA or Orca:
+            </p>
+            <div class="swap-fallback-links">
+              <a class="swap-fallback-btn" href="${aquaUrl}" target="_blank" rel="noopener">🌊 Trade on AQUA ↗</a>
+              ${orcaUrl ? `<a class="swap-fallback-btn orca" href="${orcaUrl}" target="_blank" rel="noopener">🐳 Orca Pool ↗</a>` : ''}
+            </div>
+          `;
+          addMessage('', 'agent', card, false);
+          return;
+        }
+
+        throw new Error(`Quote API returned ${quoteRes.status}${errDetail ? ': ' + errDetail : ''}`);
+      }
+
       const quote = await quoteRes.json();
       if (quote.error) throw new Error(quote.error);
 
-      // Calculate display values
-      const decimals   = launch.decimals ?? 9;
+      // Calculate display values — AQUA tokens use tokenDecimals (usually 6)
+      const decimals   = launch.tokenDecimals ?? launch.decimals ?? 6;
       const outDisplay = (Number(quote.outAmount) / Math.pow(10, decimals))
         .toLocaleString('en-US', { maximumSignificantDigits: 6 });
       const inSol     = (Number(quote.inAmount) / 1e9).toFixed(4);
@@ -194,7 +230,18 @@
 
     } catch (err) {
       console.error(err);
-      addMessage(`Couldn't get a quote: ${err.message}`, 'agent');
+      // Generic fallback with AQUA link so the user isn't left stranded
+      const card = document.createElement('div');
+      card.className = 'swap-quote-card swap-quote-no-route';
+      card.innerHTML = `
+        <div class="swap-no-route-icon">❌</div>
+        <p class="swap-no-route-msg"><strong>Couldn't get a quote for ${symbol}.</strong><br>${err.message}</p>
+        <div class="swap-fallback-links">
+          <a class="swap-fallback-btn" href="${aquaUrl}" target="_blank" rel="noopener">🌊 Trade on AQUA ↗</a>
+          ${orcaUrl ? `<a class="swap-fallback-btn orca" href="${orcaUrl}" target="_blank" rel="noopener">🐳 Orca Pool ↗</a>` : ''}
+        </div>
+      `;
+      addMessage('', 'agent', card, false);
     }
   }
 
@@ -462,13 +509,22 @@
       };
     }
 
-    // ── Helper: find a token by name/symbol in query ───────────────────────
+    // ── Helper: find a token by name/symbol/CA in query ───────────────────────
     function findToken(query) {
+      const q = query.toLowerCase().trim();
+      
+      // 1. Exact match (Mint/CA, Symbol, or Name)
+      let match = allLaunches.find(l =>
+        (l.mint   || '').toLowerCase() === q ||
+        (l.symbol || '').toLowerCase() === q ||
+        (l.name   || '').toLowerCase() === q
+      );
+      if (match) return match;
+      
+      // 2. Partial match (Name or Symbol includes the query)
       return allLaunches.find(l =>
-        (l.symbol || '').toLowerCase() === query ||
-        (l.name   || '').toLowerCase() === query ||
-        (l.name   || '').toLowerCase().includes(query) ||
-        query.includes((l.symbol || '').toLowerCase())
+        (l.name   || '').toLowerCase().includes(q) ||
+        (l.symbol || '').toLowerCase().includes(q)
       ) || null;
     }
 
@@ -513,10 +569,23 @@
     const sentimentKeywords  = /\b(good|bad|worth it|worth buying|undervalued|overvalued|bull|bear|bullish|bearish|gem|safe|risky|rug|legit|scam|hold|bag|accumulate|dip|buy the dip)\b/;
 
     // Check if question is about a specific token with prediction/sentiment
-    for (const l of allLaunches) {
+    // Sort launches by length descending to prevent greedy matching (e.g. "AQUA" overriding "AQUACAT")
+    const searchLaunches = [...allLaunches].sort((a, b) => {
+      const aLen = Math.max((a.name || '').length, (a.symbol || '').length);
+      const bLen = Math.max((b.name || '').length, (b.symbol || '').length);
+      return bLen - aLen;
+    });
+
+    for (const l of searchLaunches) {
       const sym  = (l.symbol || '').toLowerCase();
       const name = (l.name   || '').toLowerCase();
-      if ((q.includes(sym) || q.includes(name)) && sym.length > 1) {
+      const mint = (l.mint   || '').toLowerCase();
+      
+      const hasSymMatch  = sym.length > 1 && q.includes(sym);
+      const hasNameMatch = name.length > 2 && q.includes(name);
+      const hasMintMatch = mint.length > 10 && q.includes(mint);
+
+      if (hasSymMatch || hasNameMatch || hasMintMatch) {
         const d = getLaunchData(l);
         const symbol = (l.symbol || '').toUpperCase();
         const isMoon  = predictionKeywords.test(q);
@@ -702,4 +771,25 @@
   }
 
   loadMarkets();
+
+  // ── Landing Screen ────────────────────────────────────────────────────────
+  const landing    = $('landing');
+  const appShell   = $('appShell');
+  const enterBtn   = $('landingEnter');
+  const hasVisited = localStorage.getItem('orca_visited');
+
+  function enterApp() {
+    landing.classList.add('is-hidden');
+    appShell.style.display = '';
+    localStorage.setItem('orca_visited', '1');
+  }
+
+  if (hasVisited) {
+    // Skip landing for returning visitors
+    landing.style.display = 'none';
+    appShell.style.display = '';
+  } else {
+    enterBtn?.addEventListener('click', enterApp);
+  }
+
 })();
