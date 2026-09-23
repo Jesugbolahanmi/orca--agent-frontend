@@ -96,6 +96,15 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   text-transform: uppercase;
 }
 
+.x-link {
+  color: var(--quiet);
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+}
+.x-link:hover { color: #fff; }
+.x-link svg { width: 16px; height: 16px; fill: currentColor; }
+
 /* ────────────────────────────────────────────────────────────────────────────
    WALLET BUTTON
    ──────────────────────────────────────────────────────────────────────────── */
@@ -229,6 +238,38 @@ h1 {
 }
 .refresh-button:disabled { cursor: not-allowed; opacity: .35; }
 
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.page-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--quiet);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.page-btn:not(:disabled):hover {
+  background: var(--aqua-dim);
+  color: var(--aqua);
+  border-color: rgba(142,203,197,.4);
+}
+.page-btn.is-active {
+  background: var(--aqua);
+  color: #000;
+  border-color: var(--aqua);
+}
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 /* ────────────────────────────────────────────────────────────────────────────
    MARKET TOOLBAR
    ──────────────────────────────────────────────────────────────────────────── */
@@ -286,11 +327,8 @@ h1 {
 .market-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  overflow: hidden;
+  gap: 20px;
+  margin-bottom: 24px;
 }
 
 /* ── Token card ─────────────────────────────────────────────────────────── */
@@ -300,9 +338,11 @@ h1 {
   display: flex;
   flex-direction: column;
   background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   position: relative;
   overflow: hidden;
-  transition: background .2s;
+  transition: border-color .2s, box-shadow .2s;
 }
 /* Subtle corner accent */
 .token-card::before {
@@ -313,16 +353,10 @@ h1 {
   pointer-events: none;
 }
 /* Hover glow border */
-.token-card::after {
-  content: '';
-  position: absolute; inset: 0;
-  border-radius: 0;
-  box-shadow: inset 0 0 0 0px var(--aqua-glow);
-  transition: box-shadow .25s;
-  pointer-events: none;
+.token-card:hover { 
+  border-color: rgba(142,203,197,.3);
+  box-shadow: 0 4px 20px rgba(0,0,0,.2);
 }
-.token-card:hover { background: var(--panel-hover); }
-.token-card:hover::after { box-shadow: inset 0 0 0 1px rgba(142,203,197,.3); }
 
 .token-head { display: flex; align-items: center; gap: 12px; }
 .token-initials {

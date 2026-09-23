@@ -23,7 +23,6 @@
     <div class="landing-inner">
       <!-- Logo -->
       <div class="landing-logo-wrap">
-        <img src="./favicon.jpg" alt="ORCAGENT" class="landing-logo">
         <div class="landing-logo-ring"></div>
       </div>
 
@@ -44,28 +43,36 @@
       <!-- Feature grid -->
       <div class="landing-features">
         <div class="landing-feat">
-          <div class="landing-feat-icon">📈</div>
+          <div class="landing-feat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+          </div>
           <div>
             <p class="landing-feat-label">Live Market Data</p>
             <p class="landing-feat-sub">All 100+ AQUA tokens, real-time</p>
           </div>
         </div>
         <div class="landing-feat">
-          <div class="landing-feat-icon">🤖</div>
+          <div class="landing-feat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 12L2.1 12"></path><path d="M12 12L19.07 4.93"></path></svg>
+          </div>
           <div>
             <p class="landing-feat-label">AI Agent</p>
             <p class="landing-feat-sub">Ask anything in plain English</p>
           </div>
         </div>
         <div class="landing-feat">
-          <div class="landing-feat-icon">⚡</div>
+          <div class="landing-feat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          </div>
           <div>
             <p class="landing-feat-label">On-Chain Swaps</p>
             <p class="landing-feat-sub">Buy &amp; sell directly in the app</p>
           </div>
         </div>
         <div class="landing-feat">
-          <div class="landing-feat-icon">👛</div>
+          <div class="landing-feat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+          </div>
           <div>
             <p class="landing-feat-label">Any Solana Wallet</p>
             <p class="landing-feat-sub">Phantom &amp; all compatible wallets</p>
@@ -94,6 +101,9 @@
     <a class="wordmark" href="#market" aria-label="ORCAGENT market home">ORCAGENT</a>
     <p class="strapline">AQUA Launchpad market reader</p>
     <span class="source-label" id="sourceLabel">Awaiting market</span>
+    <a href="https://x.com/OrcAgentt" target="_blank" rel="noopener noreferrer" class="x-link" aria-label="X Profile">
+      <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    </a>
     <button id="walletBtn" class="wallet-btn">Connect Wallet</button>
   </header>
 
@@ -130,6 +140,7 @@
       </div>
 
       <div class="market-grid" id="marketGrid" aria-live="polite"></div>
+      <div class="pagination-controls" id="marketPagination" style="display:none"></div>
       <p class="data-caption">ORCAGENT displays values returned by AQUA Family's public launch directory. A metric remains unavailable when it is not returned for that launch.</p>
     </section>
 
@@ -171,7 +182,9 @@
       </div>
       <div id="portfolioContent">
         <div class="connect-prompt">
-          <div class="connect-prompt-icon">◎</div>
+          <div class="connect-prompt-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+          </div>
           <p>Connect your Phantom wallet to see your AQUA Launchpad holdings.</p>
           <button class="wallet-btn" id="portfolioConnectBtn">Connect Wallet</button>
         </div>

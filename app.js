@@ -26,6 +26,8 @@
   let pendingBuyTarget = null;
   let pendingSellTarget = null;
   let lastPrompt = null;
+  let currentMarketList = [];
+  let marketPage = 1;
 
   // ── Status ────────────────────────────────────────────────────────────────
   function setStatus(text, kind = '') {
@@ -82,22 +84,34 @@
 
   function applySearch() {
     const q = ($('marketSearch')?.value || '').trim().toLowerCase();
-    const list = q
+    currentMarketList = q
       ? allLaunches.filter(l => (l.name || '').toLowerCase().includes(q) || (l.symbol || '').toLowerCase().includes(q))
       : allLaunches;
-    renderGrid(list);
+    marketPage = 1;
+    renderGrid();
   }
 
-  function renderGrid(launches) {
+  function renderGrid() {
     const grid = $('marketGrid');
+    const pagination = $('marketPagination');
     grid.innerHTML = '';
+    if (pagination) {
+      pagination.innerHTML = '';
+      pagination.style.display = 'none';
+    }
 
-    if (!launches.length) {
+    if (!currentMarketList.length) {
       grid.innerHTML = '<p class="empty-market">No launches found.</p>';
       return;
     }
 
-    for (const launch of launches) {
+    const pageSize = 20;
+    const totalPages = Math.ceil(currentMarketList.length / pageSize);
+    const start = (marketPage - 1) * pageSize;
+    const end = start + pageSize;
+    const pageData = currentMarketList.slice(start, end);
+
+    for (const launch of pageData) {
       const market  = pricesMap.get(launch.id) || null;
       const symbol  = String(launch.symbol || 'TOKEN').toUpperCase();
       const price   = val(market, launch, 'priceUsd');
@@ -132,6 +146,31 @@
         <a class="card-buy-btn" href="https://aquafamily.fun/#/token/${launch.id}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;text-align:center;box-sizing:border-box;">View Market ↗</a>
       `;
       grid.appendChild(card);
+    }
+
+    if (totalPages > 1 && pagination) {
+      pagination.style.display = 'flex';
+      
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'page-btn';
+      prevBtn.textContent = 'Prev';
+      prevBtn.disabled = marketPage === 1;
+      prevBtn.onclick = () => { if (marketPage > 1) { marketPage--; renderGrid(); window.scrollTo({top: 0, behavior: 'smooth'}); } };
+      pagination.appendChild(prevBtn);
+
+      const info = document.createElement('span');
+      info.style.color = 'var(--quiet)';
+      info.style.fontSize = '12px';
+      info.style.fontWeight = '600';
+      info.textContent = `Page ${marketPage} of ${totalPages}`;
+      pagination.appendChild(info);
+
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'page-btn';
+      nextBtn.textContent = 'Next';
+      nextBtn.disabled = marketPage === totalPages;
+      nextBtn.onclick = () => { if (marketPage < totalPages) { marketPage++; renderGrid(); window.scrollTo({top: 0, behavior: 'smooth'}); } };
+      pagination.appendChild(nextBtn);
     }
   }
 
@@ -176,8 +215,8 @@
               You can swap it directly on AQUA or Orca:
             </p>
             <div class="swap-fallback-links">
-              <a class="swap-fallback-btn" href="${aquaUrl}" target="_blank" rel="noopener">🌊 Trade on AQUA ↗</a>
-              ${orcaUrl ? `<a class="swap-fallback-btn orca" href="${orcaUrl}" target="_blank" rel="noopener">🐳 Orca Pool ↗</a>` : ''}
+              <a class="swap-fallback-btn" href="${aquaUrl}" target="_blank" rel="noopener">Trade on AQUA ↗</a>
+              ${orcaUrl ? `<a class="swap-fallback-btn orca" href="${orcaUrl}" target="_blank" rel="noopener">Orca Pool ↗</a>` : ''}
             </div>
           `;
           addMessage('', 'agent', card, false);
@@ -891,7 +930,7 @@
       const gainers = allLaunches.filter(l => (getLaunchData(l).change || 0) > 0).length;
       const losers  = allLaunches.filter(l => (getLaunchData(l).change || 0) < 0).length;
       const totalVol = allLaunches.reduce((acc, l) => acc + (getLaunchData(l).vol || 0), 0);
-      const sentiment = gainers > losers ? '📈 Bullish' : gainers < losers ? '📉 Bearish' : '⚖️ Mixed';
+      const sentiment = gainers > losers ? 'Bullish' : gainers < losers ? 'Bearish' : 'Mixed';
       return { text: `AQUA Launchpad Market Overview:\n${sentiment} — ${gainers} tokens up, ${losers} down\nTotal 24h Volume: ${dollars(totalVol)}\nTokens tracked: ${allLaunches.length}`, link: null };
     }
     if (/\b(most holders?|largest community|most popular by holders?)\b/.test(q)) {
@@ -904,7 +943,7 @@
     }
 
     if (/^help$|what can you do|what do you know|commands/.test(q)) {
-      return { text: `I can help you with:\n• 💰 "price of [token]" — live price\n• 📊 "[token] analysis" — full breakdown\n• 🚀 "is [token] going to moon?" — honest outlook\n• 📈 top gainers / top losers\n• 💧 highest volume / largest market cap\n• 🌐 market overview / market status\n• 🛒 "buy [token]" — swap via Jupiter\n• 📁 most holders / newest launch`, link: null };
+      return { text: `I can help you with:\n• "price of [token]" — live price\n• "[token] analysis" — full breakdown\n• "is [token] going to moon?" — honest outlook\n• top gainers / top losers\n• highest volume / largest market cap\n• market overview / market status\n• "buy [token]" — swap via Jupiter\n• most holders / newest launch`, link: null };
     }
 
     // ── General AQUA Launchpad questions ──────────────────────────────────
