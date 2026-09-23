@@ -1,5 +1,6 @@
 (() => {
   const AQUA_API  = '';
+  const JUP_PROXY = '/api/jupiter';
   const SOL_MINT  = 'So11111111111111111111111111111111111111112';
   const $  = id => document.getElementById(id);
   const $$ = sel => document.querySelectorAll(sel);
@@ -115,7 +116,7 @@
           <div><dt>Vol 24h</dt><dd>${dollars(vol)}</dd></div>
           <div><dt>Holders</dt><dd>${holders !== null ? Number(holders).toLocaleString() : 'n/a'}</dd></div>
         </dl>
-        <button class="card-buy-btn" data-id="${launch.id}" data-mint="${launch.mint || ''}" data-symbol="${symbol}" data-name="${launch.name || 'Token'}">Buy ${symbol} →</button>
+        <button class="card-buy-btn" data-id="${launch.id}">Buy ${symbol} →</button>
       `;
       grid.appendChild(card);
     }
@@ -129,7 +130,7 @@
   }
 
   // ── Swap Quote Flow ────────────────────────────────────────────────────────
-  // Fetches a Jupiter quote and renders an inline confirmation card in the chat.
+  // Calls Jupiter via our Vercel proxy (avoids CORS), shows an inline quote card.
   async function triggerBuyFlow(launch, solAmount) {
     const symbol = (launch.symbol || 'TOKEN').toUpperCase();
 
@@ -138,13 +139,15 @@
       return;
     }
 
-    addMessage(`Fetching quote: ${solAmount} SOL → ${symbol}…`, 'agent');
-
     const lamports = Math.round(solAmount * 1e9);
 
     try {
       const quoteRes = await fetch(
-        `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${launch.mint}&amount=${lamports}&slippageBps=50`
+        `${JUP_PROXY}?endpoint=quote` +
+        `&inputMint=${encodeURIComponent(SOL_MINT)}` +
+        `&outputMint=${encodeURIComponent(launch.mint)}` +
+        `&amount=${lamports}` +
+        `&slippageBps=50`
       );
       if (!quoteRes.ok) throw new Error(`Quote API returned ${quoteRes.status}`);
       const quote = await quoteRes.json();
@@ -152,14 +155,15 @@
 
       // Calculate display values
       const decimals   = launch.decimals ?? 9;
-      const outRaw     = Number(quote.outAmount);
-      const outDisplay = (outRaw / Math.pow(10, decimals)).toLocaleString('en-US', { maximumSignificantDigits: 6 });
-      const inSol      = (Number(quote.inAmount) / 1e9).toFixed(4);
-      const impact     = parseFloat(quote.priceImpactPct || 0);
-      const impactPct  = (impact < 0.01 ? '<0.01' : impact.toFixed(2)) + '%';
+      const outDisplay = (Number(quote.outAmount) / Math.pow(10, decimals))
+        .toLocaleString('en-US', { maximumSignificantDigits: 6 });
+      const inSol     = (Number(quote.inAmount) / 1e9).toFixed(4);
+      const impact    = parseFloat(quote.priceImpactPct || 0);
+      const impactPct = (impact < 0.01 ? '<0.01' : impact.toFixed(2)) + '%';
 
       // Build the inline swap card
-      const card = document.createElement('div');
+      const card   = document.createElement('div');
+      const btnId  = 'scb_' + Date.now();
       card.className = 'swap-quote-card';
       card.innerHTML = `
         <div class="swap-route">
@@ -171,15 +175,14 @@
           <span>Slippage: 0.5%</span>
           <span>Price impact: ${impactPct}</span>
         </div>
-        <button class="swap-confirm-btn" id="swapConfirmBtn_${Date.now()}">⚡ Confirm Swap in Wallet</button>
+        <button class="swap-confirm-btn" id="${btnId}">⚡ Confirm Swap in Wallet</button>
       `;
 
       addMessage('', 'agent', card);
 
-      // Wire confirm button
-      card.querySelector('[id^="swapConfirmBtn_"]').addEventListener('click', async function () {
+      document.getElementById(btnId).addEventListener('click', async function () {
         if (!walletAddr) {
-          addMessage('Please connect your wallet first using the button in the top-right.', 'agent');
+          addMessage('Please connect your wallet first (top-right button).', 'agent');
           return;
         }
         await executeSwap(quote, launch, this);
@@ -197,8 +200,8 @@
     confirmBtn.textContent = 'Building transaction…';
 
     try {
-      // 1. Get swap transaction from Jupiter
-      const swapRes = await fetch('https://quote-api.jup.ag/v6/swap', {
+      // 1. Build swap transaction via Vercel proxy → Jupiter
+      const swapRes = await fetch(`${JUP_PROXY}?endpoint=swap`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -213,7 +216,7 @@
       const { swapTransaction } = await swapRes.json();
       if (!swapTransaction) throw new Error('No transaction returned from swap API');
 
-      // 2. Deserialize (requires @solana/web3.js loaded via CDN)
+      // 2. Deserialize and send to wallet for signing
       confirmBtn.textContent = 'Waiting for wallet…';
       const txBytes = Uint8Array.from(atob(swapTransaction), c => c.charCodeAt(0));
 
@@ -223,12 +226,12 @@
         const result = await window.solana.signAndSendTransaction(tx);
         signature = result.signature;
       } else {
-        // Fallback: pass raw bytes directly (works with some wallets)
+        // Fallback for wallets that accept raw bytes
         const result = await window.solana.signAndSendTransaction({ serialize: () => txBytes });
         signature = result.signature;
       }
 
-      // 3. Success
+      // 3. Show success
       confirmBtn.textContent = '✅ Submitted!';
       confirmBtn.style.background = 'var(--up)';
       confirmBtn.style.color = '#0a1a0d';
@@ -241,10 +244,10 @@
       console.error(err);
       confirmBtn.disabled = false;
       confirmBtn.textContent = '⚡ Confirm Swap in Wallet';
-      const msg = err.message?.toLowerCase().includes('reject') || err.message?.toLowerCase().includes('cancel')
-        ? 'Transaction cancelled by wallet.'
-        : `Swap failed: ${err.message}`;
-      addMessage(msg, 'agent');
+      const rejected = err.message?.toLowerCase().includes('reject') ||
+                       err.message?.toLowerCase().includes('cancel') ||
+                       err.message?.toLowerCase().includes('user denied');
+      addMessage(rejected ? 'Transaction cancelled.' : `Swap failed: ${err.message}`, 'agent');
     }
   }
 
@@ -363,7 +366,7 @@
         <button class="card-buy-btn holding-buy-btn">Swap ${symbol} →</button>
       `;
       card.querySelector('.holding-buy-btn').addEventListener('click', () => {
-        // Switch to agent tab and trigger buy
+        // Switch to agent tab
         $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b.dataset.tab === 'agent'); b.setAttribute('aria-selected', b.dataset.tab === 'agent'); });
         $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'agent'));
         addMessage(`buy ${name}`, 'user');
@@ -384,7 +387,6 @@
     feed.scrollTop = feed.scrollHeight;
   }
 
-  // Creates a "⚡ Swap TOKEN now" button that triggers the buy flow inline
   function makeBuyLink(launch) {
     const symbol = (launch.symbol || 'TOKEN').toUpperCase();
     const btn = document.createElement('button');
@@ -401,25 +403,24 @@
       return { text: 'Market data is still loading. Please try again in a moment.', link: null };
     }
 
-    // Buy intent — supports: "buy aqua", "buy $aqua", "buy 0.5 sol of aqua", "buy 1 sol aqua"
+    // Buy intent — supports: "buy aqua", "buy $aqua", "buy 0.5 sol of aqua"
     const buyMatch = q.match(/^buy\s+(?:(\d+\.?\d*)\s+sol\s+(?:of\s+)?)?\$?(.+)/);
     if (buyMatch) {
       const solAmount = parseFloat(buyMatch[1]) || 0.1;
-      const target    = buyMatch[2].replace(/^\$/, '').trim();
+      const target    = buyMatch[2].trim();
       const launch    = allLaunches.find(l =>
         (l.symbol || '').toLowerCase() === target ||
         (l.name   || '').toLowerCase().includes(target)
       );
       if (launch) {
-        // Trigger async quote flow after the reply message is added
-        setTimeout(() => triggerBuyFlow(launch, solAmount), 250);
+        setTimeout(() => triggerBuyFlow(launch, solAmount), 300);
         return {
           text: `Getting a quote for ${solAmount} SOL → ${(launch.symbol || '').toUpperCase()}…`,
           link: null,
         };
       }
       return {
-        text: `I couldn't find a token matching "${target}". Check the spelling or browse the Market tab.`,
+        text: `I couldn't find "${target}". Check the spelling or browse the Market tab.`,
         link: null,
       };
     }
@@ -461,7 +462,7 @@
       return { text, link: makeBuyLink(token) };
     }
 
-    return { text: `I couldn't find "${prompt}". Try a token name, or: buy ORCA · largest market cap · top gainers · market status.`, link: null };
+    return { text: `I couldn't find "${prompt}". Try a token name, or: buy ORCA · largest market cap · top gainers.`, link: null };
   }
 
   $('askForm')?.addEventListener('submit', e => {
