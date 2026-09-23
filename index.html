@@ -16,6 +16,81 @@
 </head>
 <body>
 
+  <!-- ── Landing Screen ───────────────────────────────────────────── -->
+  <div class="landing" id="landing">
+    <canvas class="landing-canvas" id="landingCanvas"></canvas>
+    <div class="landing-grid-overlay"></div>
+
+    <div class="landing-inner">
+      <!-- Logo -->
+      <div class="landing-logo-wrap">
+        <img src="./favicon.jpg" alt="ORCAGENT" class="landing-logo">
+        <div class="landing-logo-ring"></div>
+        <div class="landing-logo-ring landing-logo-ring--2"></div>
+      </div>
+
+      <!-- Badge -->
+      <div class="landing-badge">
+        <span class="landing-badge-dot"></span>
+        First Interactive Agent on Aqua LaunchPad
+      </div>
+
+      <!-- Title -->
+      <h1 class="landing-title">
+        <span class="landing-title-orca">ORC</span><span class="landing-title-agent">AGENT</span>
+      </h1>
+
+      <!-- Typewriter -->
+      <p class="landing-typewriter" id="landingTypewriter"></p>
+
+      <!-- Feature grid -->
+      <div class="landing-features">
+        <div class="landing-feat">
+          <div class="landing-feat-icon">📈</div>
+          <div>
+            <p class="landing-feat-label">Live Market Data</p>
+            <p class="landing-feat-sub">All 100+ AQUA tokens, real-time</p>
+          </div>
+        </div>
+        <div class="landing-feat">
+          <div class="landing-feat-icon">🤖</div>
+          <div>
+            <p class="landing-feat-label">AI Agent</p>
+            <p class="landing-feat-sub">Ask anything in plain English</p>
+          </div>
+        </div>
+        <div class="landing-feat">
+          <div class="landing-feat-icon">⚡</div>
+          <div>
+            <p class="landing-feat-label">On-Chain Swaps</p>
+            <p class="landing-feat-sub">Buy &amp; sell directly in the app</p>
+          </div>
+        </div>
+        <div class="landing-feat">
+          <div class="landing-feat-icon">👛</div>
+          <div>
+            <p class="landing-feat-label">Any Solana Wallet</p>
+            <p class="landing-feat-sub">Phantom &amp; all compatible wallets</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <button class="landing-enter" id="landingEnter">
+        <span>Launch App</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+
+      <!-- Footer credit -->
+      <p class="landing-caption">
+        Built by <strong>Atlantis</strong> &nbsp;·&nbsp; Powered by Orca &amp; Solana
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Main App ─────────────────────────────────────────────── -->
+  <div class="app-shell" id="appShell" style="display:none">
+
   <!-- ── Topbar ──────────────────────────────────────────────────────────── -->
   <header class="topbar">
     <a class="wordmark" href="#market" aria-label="ORCAGENT market home">ORCAGENT</a>
@@ -105,11 +180,112 @@
     </section>
 
   </main>
+  </div><!-- /app-shell -->
 
 
 
   <script src="./config.js"></script>
   <script src="./env.js"></script>
   <script src="./app.js" defer></script>
+
+  <!-- Landing: particles + typewriter -->
+  <script>
+    // ── Particle Canvas ──────────────────────────────────────────────────────
+    (function() {
+      const canvas = document.getElementById('landingCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let W, H, particles = [];
+
+      function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      const AQUA = '142,203,197';
+      const COUNT = Math.min(90, Math.floor(window.innerWidth / 14));
+
+      for (let i = 0; i < COUNT; i++) {
+        particles.push({
+          x: Math.random() * 1,
+          y: Math.random() * 1,
+          r: 0.5 + Math.random() * 1.5,
+          vx: (Math.random() - 0.5) * 0.0002,
+          vy: (Math.random() - 0.5) * 0.0002,
+          a: 0.2 + Math.random() * 0.5,
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Radial aqua glow from center
+        const grd = ctx.createRadialGradient(W/2, H*0.35, 0, W/2, H*0.35, W*0.55);
+        grd.addColorStop(0,   `rgba(${AQUA}, 0.13)`);
+        grd.addColorStop(0.5, `rgba(${AQUA}, 0.04)`);
+        grd.addColorStop(1,   `rgba(${AQUA}, 0)`);
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, W, H);
+
+        // Particles
+        for (const p of particles) {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0) p.x = 1; if (p.x > 1) p.x = 0;
+          if (p.y < 0) p.y = 1; if (p.y > 1) p.y = 0;
+          ctx.beginPath();
+          ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${AQUA}, ${p.a})`;
+          ctx.fill();
+        }
+
+        // Draw connecting lines for close particles
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = (particles[i].x - particles[j].x) * W;
+            const dy = (particles[i].y - particles[j].y) * H;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < 120) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x * W, particles[i].y * H);
+              ctx.lineTo(particles[j].x * W, particles[j].y * H);
+              ctx.strokeStyle = `rgba(${AQUA}, ${0.08 * (1 - dist / 120)})`;
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // ── Typewriter ───────────────────────────────────────────────────────────
+    (function() {
+      const el = document.getElementById('landingTypewriter');
+      if (!el) return;
+      const lines = [
+        'Track every AQUA token in real time.',
+        'Chat with the market. Ask anything.',
+        'Buy & sell on-chain — no redirect.',
+        'Built by Atlantis, powered by Orca.',
+      ];
+      let li = 0, ci = 0, deleting = false;
+      function tick() {
+        const line = lines[li];
+        if (!deleting) {
+          el.textContent = line.slice(0, ++ci);
+          if (ci === line.length) { deleting = true; setTimeout(tick, 2000); return; }
+          setTimeout(tick, 42);
+        } else {
+          el.textContent = line.slice(0, --ci);
+          if (ci === 0) { deleting = false; li = (li + 1) % lines.length; setTimeout(tick, 300); return; }
+          setTimeout(tick, 22);
+        }
+      }
+      setTimeout(tick, 800);
+    })();
+  </script>
 </body>
 </html>
