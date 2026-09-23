@@ -10,6 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
+  <!-- Jupiter Terminal -->
+  <script src="https://terminal.jup.ag/main-v3.js" data-preload></script>
 </head>
 <body>
 
@@ -61,7 +63,7 @@
       <div class="agent-intro">
         <p class="kicker">Market reader</p>
         <h1 id="agentTitle">Ask the market, not the crowd.</h1>
-        <p>ORCAGENT reads the live AQUA Launchpad directory. Type a token name, ask for stats, or say <strong>buy ORCA</strong> to trade on AQUA Family.</p>
+        <p>ORCAGENT reads the live AQUA Launchpad directory. Type a token name, ask for stats, or say <strong>buy [token]</strong> to swap directly in the app — no redirect needed.</p>
       </div>
 
       <div class="agent-shell">
@@ -73,7 +75,7 @@
           <button type="button" data-prompt="market status">Market status</button>
         </div>
         <div class="conversation" id="conversation" aria-live="polite">
-          <div class="message agent-message">I'm watching the AQUA Launchpad in real time. Ask me about any token, market stats — or say <strong>buy [symbol]</strong> to open the trade on AQUA Family.</div>
+          <div class="message agent-message">I'm watching the AQUA Launchpad in real time. Ask me about any token, market stats — or say <strong>buy [symbol]</strong> to swap directly here with any Solana wallet.</div>
         </div>
         <form class="ask-form" id="askForm">
           <label class="sr-only" for="askInput">Ask ORCAGENT about the market</label>
@@ -103,20 +105,22 @@
 
   </main>
 
-  <!-- ── Buy Modal ──────────────────────────────────────────────────────── -->
-  <div id="buyModal" class="buy-modal" hidden aria-modal="true" role="dialog" aria-labelledby="buyModalTitle">
-    <div class="buy-modal-card">
-      <button class="buy-modal-close" id="buyModalClose" aria-label="Close">✕</button>
-      <div class="buy-modal-token" id="buyModalToken">
-        <div class="buy-modal-initials" id="buyModalInitials">—</div>
-        <div>
-          <div class="buy-modal-name" id="buyModalName">Token</div>
-          <div class="buy-modal-price" id="buyModalPrice"></div>
+  <!-- ── Swap Modal (Jupiter Terminal) ───────────────────────────────────── -->
+  <div id="swapModal" class="swap-modal" hidden aria-modal="true" role="dialog" aria-labelledby="swapModalTitle">
+    <div class="swap-modal-card">
+      <div class="swap-modal-header">
+        <div class="swap-modal-token-info">
+          <div class="buy-modal-initials" id="swapModalInitials">—</div>
+          <div>
+            <div class="buy-modal-name" id="swapModalName">Token</div>
+            <div class="buy-modal-price" id="swapModalPrice"></div>
+          </div>
         </div>
+        <button class="buy-modal-close" id="swapModalClose" aria-label="Close swap">✕</button>
       </div>
-      <h2 id="buyModalTitle" class="buy-modal-title">Trade on AQUA Family</h2>
-      <p class="buy-modal-desc">This will open the AQUA Family launchpad for this token where you can swap using your connected wallet.</p>
-      <a id="buyModalLink" class="buy-confirm-btn" target="_blank" rel="noopener">Open AQUA Family →</a>
+      <h2 id="swapModalTitle" class="swap-modal-title">Swap on Jupiter</h2>
+      <!-- Jupiter Terminal mounts here -->
+      <div id="jupiter-terminal-container"></div>
     </div>
   </div>
 

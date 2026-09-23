@@ -122,7 +122,7 @@
 
     // Buy button listeners on cards
     grid.querySelectorAll('.card-buy-btn').forEach(btn => {
-      btn.addEventListener('click', () => openBuyModal({
+      btn.addEventListener('click', () => openSwapModal({
         id:     btn.dataset.id,
         mint:   btn.dataset.mint,
         symbol: btn.dataset.symbol,
@@ -132,23 +132,66 @@
     });
   }
 
-  // ── Buy Modal ─────────────────────────────────────────────────────────────
-  function openBuyModal({ id, mint, symbol, name, price }) {
-    $('buyModalInitials').textContent = symbol.slice(0, 4);
-    $('buyModalName').textContent     = name;
-    $('buyModalPrice').textContent    = price || '';
-    const link = id ? `${AQUA_SITE}/#/token/${id}` : AQUA_SITE;
-    $('buyModalLink').href = link;
-    $('buyModal').hidden  = false;
+  // ── Swap Modal (Jupiter Terminal) ────────────────────────────────────────
+  function openSwapModal({ id, mint, symbol, name, price }) {
+    const modal = $('swapModal');
+    if (!modal) return;
+
+    // Populate header info
+    $('swapModalInitials').textContent = (symbol || 'TKN').slice(0, 4);
+    $('swapModalName').textContent     = name || 'Token';
+    $('swapModalPrice').textContent    = price || '';
+
+    modal.hidden = false;
     document.body.style.overflow = 'hidden';
+
+    // Mount Jupiter Terminal into our container
+    const container = $('jupiter-terminal-container');
+    container.innerHTML = ''; // clear any previous instance
+
+    if (window.Jupiter) {
+      window.Jupiter.init({
+        displayMode: 'integrated',
+        integratedTargetId: 'jupiter-terminal-container',
+        endpoint: 'https://mainnet.helius-rpc.com/?api-key=1b5d20e4-7d59-4a80-9e2e-4d6f7e1a8c2f',
+        // Pre-select output token to the exact mint
+        initialOutputMint: mint || undefined,
+        // Use SOL as default input
+        initialInputMint: 'So11111111111111111111111111111111111111112',
+        // Dark theme to match our UI
+        appearance: 'dark',
+        // Restrict to this token pair
+        strictTokenList: false,
+        // Make it compact
+        formProps: {
+          fixedOutputMint: !!mint,
+        },
+      });
+    } else {
+      // Fallback if Jupiter script didn't load
+      container.innerHTML = `
+        <div style="padding:40px;text-align:center;color:var(--quiet);">
+          <p style="margin-bottom:16px;">Jupiter Terminal failed to load.</p>
+          <a href="https://aquafamily.fun/#/token/${id}" target="_blank" rel="noopener"
+             style="color:var(--aqua);font-weight:700;">Open on AQUA Family instead →</a>
+        </div>`;
+    }
   }
-  function closeBuyModal() {
-    $('buyModal').hidden = true;
+
+  function closeSwapModal() {
+    const modal = $('swapModal');
+    if (!modal) return;
+    modal.hidden = true;
     document.body.style.overflow = '';
+    // Destroy Jupiter instance to free memory
+    if (window.Jupiter?.close) window.Jupiter.close();
+    const container = $('jupiter-terminal-container');
+    if (container) container.innerHTML = '';
   }
-  $('buyModalClose')?.addEventListener('click', closeBuyModal);
-  $('buyModal')?.addEventListener('click', e => { if (e.target === $('buyModal')) closeBuyModal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBuyModal(); });
+
+  $('swapModalClose')?.addEventListener('click', closeSwapModal);
+  $('swapModal')?.addEventListener('click', e => { if (e.target === $('swapModal')) closeSwapModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSwapModal(); });
 
   // ── Wallet ────────────────────────────────────────────────────────────────
   async function connectWallet() {
@@ -291,16 +334,15 @@
   }
 
   function makeBuyLink(launch) {
-    const mint = launch.mint || '';
-    const id   = launch.id || '';
-    const url  = id ? `${AQUA_SITE}/#/token/${id}` : AQUA_SITE;
-    const a = document.createElement('a');
-    a.className = 'buy-inline-btn';
-    a.href = url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.textContent = `Buy ${(launch.symbol || '').toUpperCase()} on AQUA Family →`;
-    return a;
+    const mint   = launch.mint || '';
+    const id     = launch.id   || '';
+    const symbol = (launch.symbol || 'TOKEN').toUpperCase();
+    const name   = launch.name || 'Token';
+    const btn = document.createElement('button');
+    btn.className = 'buy-inline-btn';
+    btn.textContent = `⚡ Swap ${symbol} now`;
+    btn.addEventListener('click', () => openSwapModal({ id, mint, symbol, name, price: '' }));
+    return btn;
   }
 
   function agentReply(prompt) {
