@@ -270,16 +270,32 @@
       if (!res.ok) throw new Error('API error');
       const data = await res.json();
       const holdings = data.holdings || data || [];
-      const holding = holdings.find(h => (h.mint || '').toLowerCase() === (launch.mint || '').toLowerCase());
+      
+      const holding = holdings.find(h => {
+        const hMint = (h.launch?.mint || h.mint || '').toLowerCase();
+        return hMint === (launch.mint || '').toLowerCase();
+      });
       
       const symbol = (launch.symbol || 'TOKEN').toUpperCase();
       
-      if (!holding || !holding.amount || holding.amount <= 0) {
+      if (!holding) {
+        addMessage(`You don't currently hold any **${symbol}** in this wallet.`, "agent");
+        return;
+      }
+
+      const launchData = holding.launch || holding;
+      const decimals   = launchData.tokenDecimals ?? launchData.decimals ?? 6;
+      let amount = num(holding.amount || holding.balance);
+      if (holding.balanceRaw) {
+        amount = Number(holding.balanceRaw) / Math.pow(10, decimals);
+      }
+      
+      if (!amount || amount <= 0) {
         addMessage(`You don't currently hold any **${symbol}** in this wallet.`, "agent");
         return;
       }
       
-      const amtDisplay = Number(holding.amount).toLocaleString('en-US', { maximumFractionDigits: 4 });
+      const amtDisplay = amount.toLocaleString('en-US', { maximumFractionDigits: 4 });
       const valDisplay = holding.valueUsd ? ` (worth ${dollars(holding.valueUsd)})` : '';
       
       addMessage(`You are currently holding **${amtDisplay} ${symbol}**${valDisplay}.`, "agent");
