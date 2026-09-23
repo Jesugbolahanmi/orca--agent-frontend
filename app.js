@@ -42,15 +42,24 @@
     setSourceLabel('Loading…');
 
     try {
-      const [launchRes, priceRes] = await Promise.all([
-        fetch(`${AQUA_API}/api/launches?limit=200`),
-        fetch(`${AQUA_API}/api/market-prices`),
-      ]);
-      if (!launchRes.ok) throw new Error(`API ${launchRes.status}`);
+      // Paginate through all launches (API max = 100 per page)
+      let allFetched = [];
+      let offset = 0;
+      let hasMore = true;
+      while (hasMore) {
+        const res = await fetch(`${AQUA_API}/api/launches?limit=100&offset=${offset}`);
+        if (!res.ok) throw new Error(`API ${res.status}`);
+        const data = await res.json();
+        const batch = data.launches || [];
+        allFetched = allFetched.concat(batch);
+        hasMore  = !!data.hasMore;
+        offset   = data.nextOffset ?? (offset + batch.length);
+        if (!batch.length) break; // safety guard
+      }
+      allLaunches = allFetched;
 
-      const ld = await launchRes.json();
-      allLaunches = ld.launches || [];
-
+      // Load prices in parallel
+      const priceRes = await fetch(`${AQUA_API}/api/market-prices`);
       if (priceRes.ok) {
         const pd = await priceRes.json();
         pricesMap = new Map((pd.prices || []).map(p => [p.launchId, p]));
