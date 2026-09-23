@@ -1,6 +1,6 @@
 (() => {
   // Use a CORS proxy so GitHub Pages doesn't get blocked by the backend
-  const AQUA_API = 'https://corsproxy.io/?https://launchpad-backend-production-63dc.up.railway.app';
+  const AQUA_API = '';
   const $ = selector => document.querySelector(selector);
   const state = { loading: false };
   const refreshButton = $('#refreshMarket');
