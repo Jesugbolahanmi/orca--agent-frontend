@@ -29,121 +29,132 @@
   <div class="landing" id="landing" style="display:var(--landing-display, '');">
     <canvas class="landing-canvas" id="landingCanvas"></canvas>
 
-    <div class="landing-content">
-      <div class="landing-left">
-        <!-- Badge -->
-        <div class="landing-badge">
-          <span class="landing-badge-dot"></span>
-          First Interactive Agent on Aqua LaunchPad
-        </div>
-
-        <!-- Title -->
-        <h1 class="landing-title">
-          <span class="landing-title-orca">ORC</span><span class="landing-title-agent">AGENT</span>
-        </h1>
-
-        <!-- Typewriter -->
-        <p class="landing-typewriter" id="landingTypewriter"></p>
-
-        <!-- Feature grid -->
-        <div class="landing-features">
-          <div class="landing-feat">
-            <div class="landing-feat-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-                <polyline points="16 7 22 7 22 13"></polyline>
-              </svg>
-            </div>
-            <div>
-              <p class="landing-feat-label">Live Market Reader</p>
-              <p class="landing-feat-sub">Built directly on the AQUA Launchpad</p>
-            </div>
+    <div class="landing-scroll-container">
+      
+      <!-- HERO SECTION -->
+      <section class="landing-section hero-section">
+        <div class="hero-content">
+          <!-- Badge -->
+          <div class="landing-badge">
+            <span class="landing-badge-dot"></span>
+            First Interactive Agent on Aqua LaunchPad
           </div>
-          <div class="landing-feat">
-            <div class="landing-feat-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+
+          <!-- Title -->
+          <h1 class="landing-title">
+            <span class="landing-title-orca">ORC</span><span class="landing-title-agent">AGENT</span>
+          </h1>
+
+          <!-- Typewriter -->
+          <p class="landing-typewriter" id="landingTypewriter"></p>
+
+          <!-- CTAs -->
+          <div class="landing-actions">
+            <button class="landing-enter" data-target="market">
+              <span>Open Market</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                 stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
-                <path d="M12 12L2.1 12"></path>
-                <path d="M12 12L19.07 4.93"></path>
+                <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
-            </div>
-            <div>
-              <p class="landing-feat-label">Fully Interactive Agent</p>
-              <p class="landing-feat-sub">Chat with OrcAgent for live insights</p>
-            </div>
-          </div>
-          <div class="landing-feat">
-            <div class="landing-feat-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-              </svg>
-            </div>
-            <div>
-              <p class="landing-feat-label">Direct Token Swaps</p>
-              <p class="landing-feat-sub">Buy and sell AQUA tokens instantly</p>
-            </div>
-          </div>
-          <div class="landing-feat">
-            <div class="landing-feat-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
-                <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
-                <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
-              </svg>
-            </div>
-            <div>
-              <p class="landing-feat-label">Smooth, Fast &amp; Easy</p>
-              <p class="landing-feat-sub">Fully functional and community-driven</p>
-            </div>
+            </button>
+            <button class="landing-enter secondary" data-target="agent">
+              <span>Ask Agent</span>
+            </button>
+            <button class="landing-enter secondary" data-target="portfolio">
+              <span>Portfolio</span>
+            </button>
           </div>
         </div>
+      </section>
 
-        <!-- CTAs -->
-        <div class="landing-actions">
-          <button class="landing-enter" data-target="market">
-            <span>Open Market</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7" />
+      <!-- STORY SECTION -->
+      <section class="landing-section story-section">
+        <div class="story-content">
+          <h2 class="section-heading">The Apex Predator of Data.</h2>
+          <div class="story-text">
+            <p>Born from the vast oceans of Solana data, <strong>ORCAGENT</strong> isn't just another bot — it's an intelligent market companion.</p>
+            <p>Built natively on the AQUA Launchpad by Atlantis Studio, OrcAgent swims through millions of blockchain events per second to bring you the signal through the noise. It doesn't just read the market; it understands it.</p>
+            <p>While the rest of the market relies on delayed charts and noisy crowds, you have an intelligent agent that identifies top gainers, executes lightning-fast swaps, and tracks your portfolio seamlessly.</p>
+            <p class="story-kicker">Ask the market. Not the crowd.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES SECTION -->
+      <section class="landing-section features-section">
+        <div class="features-content">
+          <h2 class="section-heading">Built for the Solana Ecosystem.</h2>
+          <div class="landing-features">
+            <div class="landing-feat">
+              <div class="landing-feat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                  <polyline points="16 7 22 7 22 13"></polyline>
+                </svg>
+              </div>
+              <div>
+                <p class="landing-feat-label">Live Market Reader</p>
+                <p class="landing-feat-sub">Built directly on the AQUA Launchpad</p>
+              </div>
+            </div>
+            <div class="landing-feat">
+              <div class="landing-feat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+                  <path d="M12 12L2.1 12"></path>
+                  <path d="M12 12L19.07 4.93"></path>
+                </svg>
+              </div>
+              <div>
+                <p class="landing-feat-label">Fully Interactive Agent</p>
+                <p class="landing-feat-sub">Chat with OrcAgent for live insights</p>
+              </div>
+            </div>
+            <div class="landing-feat">
+              <div class="landing-feat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+              </div>
+              <div>
+                <p class="landing-feat-label">Direct Token Swaps</p>
+                <p class="landing-feat-sub">Buy and sell AQUA tokens instantly</p>
+              </div>
+            </div>
+            <div class="landing-feat">
+              <div class="landing-feat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+                  <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+                  <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+                </svg>
+              </div>
+              <div>
+                <p class="landing-feat-label">Smooth, Fast &amp; Easy</p>
+                <p class="landing-feat-sub">Fully functional and community-driven</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="landing-footer">
+        <div class="landing-footer-links">
+          <a href="https://x.com/OrcAgentt" target="_blank" rel="noopener noreferrer" aria-label="X Profile">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
             </svg>
-          </button>
-          <button class="landing-enter secondary" data-target="agent">
-            <span>Ask Agent</span>
-          </button>
-          <button class="landing-enter secondary" data-target="portfolio">
-            <span>Portfolio</span>
-          </button>
+          </a>
         </div>
-      </div>
-
-      <div class="landing-right">
-        <!-- Story -->
-        <div class="landing-story">
-          <h2 class="story-title">The Apex Predator of Data.</h2>
-          <p>Born from the vast oceans of Solana data, <strong>ORCAGENT</strong> isn't just another bot — it's an intelligent market companion.</p>
-          <p>Built natively on the AQUA Launchpad by Atlantis Studio, OrcAgent swims through millions of blockchain events per second to bring you the signal through the noise. It doesn't just read the market; it understands it.</p>
-          <p>While the rest of the market relies on delayed charts and noisy crowds, you have an intelligent agent that identifies top gainers, executes lightning-fast swaps, and tracks your portfolio seamlessly.</p>
-          <p class="story-kicker">Ask the market. Not the crowd.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="landing-footer">
-      <div class="landing-footer-links">
-        <a href="https://x.com/OrcAgentt" target="_blank" rel="noopener noreferrer" aria-label="X Profile">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-          </svg>
-        </a>
-      </div>
-      <p class="landing-caption">
-        Built by <strong>Atlantis</strong> &nbsp;·&nbsp; Powered by <strong>ONLY ORCA</strong>
-      </p>
+        <p class="landing-caption">
+          Built by <strong>Atlantis</strong>
+        </p>
+      </footer>
     </div>
   </div>
 
