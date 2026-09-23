@@ -969,10 +969,10 @@ dd {
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   LANDING SCREEN — PREMIUM REDESIGN
+   LANDING SCREEN
    ──────────────────────────────────────────────────────────────────────────── */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(28px); }
+  from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fadeIn {
@@ -980,33 +980,30 @@ dd {
   to   { opacity: 1; }
 }
 @keyframes ringPulse {
-  0%   { transform: scale(1);    opacity: 0.6; }
-  100% { transform: scale(1.55); opacity: 0; }
+  0%   { transform: scale(1);    opacity: 0.45; }
+  100% { transform: scale(1.5);  opacity: 0; }
 }
 @keyframes dotBlink {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.2; }
-}
-@keyframes glowSlide {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  50%       { opacity: 0.25; }
 }
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-8px); }
+  50%       { transform: translateY(-6px); }
 }
 
 .landing {
   position: fixed;
   inset: 0;
   z-index: 999;
-  background: #0a0d0c;
+  background: var(--paper);
+  background-image:
+    radial-gradient(ellipse 70% 55% at 50% 15%, rgba(142,203,197,.08) 0%, transparent 65%);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  transition: opacity 0.7s ease, visibility 0.7s ease;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
 }
 .landing.is-hidden {
   opacity: 0;
@@ -1020,19 +1017,7 @@ dd {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  opacity: 0.55;
-}
-
-.landing-grid-overlay {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(142,203,197,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(142,203,197,.04) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
-  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
-  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  opacity: 0.4;
 }
 
 .landing-inner {
@@ -1042,97 +1027,85 @@ dd {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 1.2rem;
-  padding: 2.5rem 1.5rem;
-  max-width: 640px;
+  gap: 1.1rem;
+  padding: 2rem 1.5rem;
+  max-width: 600px;
   width: 100%;
+  animation: fadeInUp 0.6s ease both;
 }
 
 /* Logo */
 .landing-logo-wrap {
   position: relative;
-  width: 100px;
-  height: 100px;
-  margin-bottom: 0.2rem;
-  animation: float 4s ease-in-out infinite;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 0.3rem;
+  animation: float 5s ease-in-out infinite;
 }
 .landing-logo {
-  width: 100px;
-  height: 100px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(142,203,197,.5);
-  box-shadow: 0 0 40px rgba(142,203,197,.3), 0 0 80px rgba(142,203,197,.1);
+  border: 2px solid var(--aqua-glow-strong);
+  box-shadow: 0 0 28px rgba(142,203,197,.2);
   position: relative;
   z-index: 1;
 }
 .landing-logo-ring {
   position: absolute;
-  inset: -8px;
+  inset: -6px;
   border-radius: 50%;
-  border: 1.5px solid rgba(142,203,197,.5);
-  animation: ringPulse 2.4s ease-out infinite;
-}
-.landing-logo-ring--2 {
-  inset: -4px;
-  animation-delay: 1.2s;
+  border: 1px solid rgba(142,203,197,.4);
+  animation: ringPulse 2.6s ease-out infinite;
 }
 
 /* Badge */
 .landing-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 1rem;
-  background: rgba(142,203,197,.08);
-  border: 1px solid rgba(142,203,197,.25);
+  gap: 0.45rem;
+  padding: 0.3rem 0.9rem;
+  background: var(--aqua-dim);
+  border: 1px solid var(--aqua-glow);
   border-radius: 100px;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--aqua);
   text-transform: uppercase;
-  animation: fadeInUp 0.7s 0.1s ease both;
 }
 .landing-badge-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--aqua);
-  animation: dotBlink 1.5s ease-in-out infinite;
+  animation: dotBlink 1.8s ease-in-out infinite;
   flex-shrink: 0;
 }
 
 /* Title */
 .landing-title {
-  font-size: clamp(3rem, 10vw, 5.5rem);
+  font-size: clamp(2.6rem, 9vw, 4.5rem);
   font-weight: 900;
   letter-spacing: -0.05em;
   line-height: 1;
   margin: 0;
-  animation: fadeInUp 0.7s 0.2s ease both;
 }
-.landing-title-orca {
-  color: #fff;
-  text-shadow: 0 0 40px rgba(255,255,255,.15);
-}
+.landing-title-orca  { color: var(--ink); }
 .landing-title-agent {
-  background: linear-gradient(135deg, var(--aqua) 0%, #5de8df 50%, var(--aqua) 100%);
-  background-size: 200% 200%;
+  color: transparent;
+  background: linear-gradient(135deg, #fff 20%, var(--aqua) 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
-  animation: glowSlide 3s ease infinite;
 }
 
 /* Typewriter */
 .landing-typewriter {
-  font-size: 1rem;
-  font-weight: 400;
+  font-size: 0.95rem;
   color: var(--quiet);
-  min-height: 1.5rem;
-  letter-spacing: 0.01em;
-  animation: fadeIn 0.5s 0.5s ease both;
+  min-height: 1.4rem;
+  animation: fadeIn 0.5s 0.3s ease both;
 }
 .landing-typewriter::after {
   content: '|';
@@ -1145,69 +1118,61 @@ dd {
 .landing-features {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.7rem;
+  gap: 0.6rem;
   width: 100%;
-  max-width: 520px;
-  margin-top: 0.2rem;
-  animation: fadeInUp 0.7s 0.4s ease both;
+  max-width: 500px;
 }
 .landing-feat {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(142,203,197,.1);
-  border-radius: 12px;
+  gap: 0.7rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   text-align: left;
-  transition: background 0.2s, border-color 0.2s;
+  transition: border-color 0.2s;
 }
-.landing-feat:hover {
-  background: rgba(142,203,197,.07);
-  border-color: rgba(142,203,197,.25);
-}
-.landing-feat-icon { font-size: 1.4rem; flex-shrink: 0; }
-.landing-feat-label { font-size: 0.82rem; font-weight: 600; color: var(--ink); }
-.landing-feat-sub   { font-size: 0.72rem; color: var(--quiet); margin-top: 1px; }
+.landing-feat:hover { border-color: var(--aqua-glow); }
+.landing-feat-icon  { font-size: 1.25rem; flex-shrink: 0; }
+.landing-feat-label { font-size: 0.8rem;  font-weight: 600; color: var(--ink); }
+.landing-feat-sub   { font-size: 0.7rem;  color: var(--quiet); margin-top: 1px; }
 
 /* CTA Button */
 .landing-enter {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-top: 0.4rem;
-  padding: 0.9rem 2.5rem;
-  background: linear-gradient(135deg, #7ecfc8 0%, var(--aqua) 50%, #5de8df 100%);
-  background-size: 200% 200%;
-  color: #071110;
-  font-weight: 800;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+  padding: 0.8rem 2.2rem;
+  background: var(--aqua);
+  color: #0a0f0e;
+  font-weight: 700;
   font-size: 1rem;
   border-radius: 100px;
   letter-spacing: 0.01em;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 0 30px rgba(142,203,197,.35), 0 4px 20px rgba(0,0,0,.4);
-  animation: fadeInUp 0.7s 0.55s ease both, glowSlide 3s ease infinite;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 0 24px rgba(142,203,197,.25);
 }
 .landing-enter:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 0 50px rgba(142,203,197,.55), 0 8px 30px rgba(0,0,0,.5);
+  transform: translateY(-2px);
+  box-shadow: 0 0 36px rgba(142,203,197,.4);
 }
-.landing-enter:active { transform: translateY(-1px) scale(0.99); }
+.landing-enter:active { transform: none; }
 
 /* Caption */
 .landing-caption {
   font-size: 0.75rem;
   color: var(--quiet);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   opacity: 0.55;
   text-transform: uppercase;
-  animation: fadeIn 0.7s 0.8s ease both;
 }
-.landing-caption strong { color: rgba(142,203,197,.8); font-weight: 700; }
+.landing-caption strong { color: var(--aqua); font-weight: 600; }
 
 @media (max-width: 480px) {
   .landing-features { grid-template-columns: 1fr; }
-  .landing-title { font-size: clamp(2.5rem, 12vw, 4rem); }
+  .landing-title { font-size: clamp(2.2rem, 12vw, 3.5rem); }
 }
 
 /* App Shell */
