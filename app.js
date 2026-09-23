@@ -994,6 +994,7 @@
           landing.classList.remove('is-hidden');
           appShell.style.display = 'none';
         }
+        localStorage.setItem('orca_tab', 'home');
         return;
       }
       $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b === btn); b.setAttribute('aria-selected', b === btn); });

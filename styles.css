@@ -26,6 +26,7 @@ html {
   background-image:
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(142,203,197,.07) 0%, transparent 60%);
   min-height: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -34,6 +35,7 @@ body {
   color: var(--ink);
   font-family: var(--font);
   line-height: 1.5;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

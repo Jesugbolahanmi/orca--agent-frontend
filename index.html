@@ -15,7 +15,7 @@
   <script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
   <!-- Immediately hide landing for returning visitors to prevent flash -->
   <script>
-    if (localStorage.getItem('orca_visited')) {
+    if (localStorage.getItem('orca_visited') && localStorage.getItem('orca_tab') !== 'home') {
       document.documentElement.style.setProperty('--landing-display', 'none');
     }
   </script>
@@ -53,8 +53,8 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
           </div>
           <div>
-            <p class="landing-feat-label">Live Market Data</p>
-            <p class="landing-feat-sub">All 100+ AQUA tokens, real-time</p>
+            <p class="landing-feat-label">Live Token Directory</p>
+            <p class="landing-feat-sub">Track prices, market caps, and volume live</p>
           </div>
         </div>
         <div class="landing-feat">
@@ -62,8 +62,8 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 12L2.1 12"></path><path d="M12 12L19.07 4.93"></path></svg>
           </div>
           <div>
-            <p class="landing-feat-label">AI Agent</p>
-            <p class="landing-feat-sub">Ask anything in plain English</p>
+            <p class="landing-feat-label">Interactive AI Agent</p>
+            <p class="landing-feat-sub">Get buy signals &amp; insights in plain English</p>
           </div>
         </div>
         <div class="landing-feat">
@@ -71,8 +71,8 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
           </div>
           <div>
-            <p class="landing-feat-label">On-Chain Swaps</p>
-            <p class="landing-feat-sub">Buy &amp; sell directly in the app</p>
+            <p class="landing-feat-label">Direct On-Chain Swaps</p>
+            <p class="landing-feat-sub">Say 'buy [token]' to trade instantly</p>
           </div>
         </div>
         <div class="landing-feat">
@@ -80,8 +80,8 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
           </div>
           <div>
-            <p class="landing-feat-label">Any Solana Wallet</p>
-            <p class="landing-feat-sub">Phantom &amp; all compatible wallets</p>
+            <p class="landing-feat-label">Wallet Portfolio</p>
+            <p class="landing-feat-sub">View all your AQUA holdings in one place</p>
           </div>
         </div>
       </div>
