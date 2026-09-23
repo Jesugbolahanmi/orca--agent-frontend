@@ -115,7 +115,7 @@
           <div><dt>Vol 24h</dt><dd>${dollars(vol)}</dd></div>
           <div><dt>Holders</dt><dd>${holders !== null ? Number(holders).toLocaleString() : 'n/a'}</dd></div>
         </dl>
-        <button class="card-buy-btn" data-mint="${launch.mint || ''}" data-symbol="${symbol}" data-name="${launch.name || 'Token'}" data-price="${dollars(price)}">Buy ${symbol} →</button>
+        <button class="card-buy-btn" data-id="${launch.id}" data-mint="${launch.mint || ''}" data-symbol="${symbol}" data-name="${launch.name || 'Token'}" data-price="${dollars(price)}">Buy ${symbol} →</button>
       `;
       grid.appendChild(card);
     }
@@ -123,6 +123,7 @@
     // Buy button listeners on cards
     grid.querySelectorAll('.card-buy-btn').forEach(btn => {
       btn.addEventListener('click', () => openBuyModal({
+        id:     btn.dataset.id,
         mint:   btn.dataset.mint,
         symbol: btn.dataset.symbol,
         name:   btn.dataset.name,
@@ -132,11 +133,11 @@
   }
 
   // ── Buy Modal ─────────────────────────────────────────────────────────────
-  function openBuyModal({ mint, symbol, name, price }) {
+  function openBuyModal({ id, mint, symbol, name, price }) {
     $('buyModalInitials').textContent = symbol.slice(0, 4);
     $('buyModalName').textContent     = name;
     $('buyModalPrice').textContent    = price || '';
-    const link = AQUA_SITE;
+    const link = id ? `${AQUA_SITE}/#/token/${id}` : AQUA_SITE;
     $('buyModalLink').href = link;
     $('buyModal').hidden  = false;
     document.body.style.overflow = 'hidden';
@@ -262,13 +263,14 @@
         </div>
         <div class="holding-amount">${amount !== null ? amount.toLocaleString('en-US', {maximumFractionDigits: 4}) : 'n/a'} <span style="font-size:13px;color:var(--quiet);font-weight:500">${symbol}</span></div>
         <div class="holding-value">≈ ${valueUsd} · ${dollars(price)} each</div>
-        <button class="card-buy-btn holding-buy-btn" data-mint="${mint}" data-symbol="${symbol}" data-name="${name}" data-price="${dollars(price)}">Trade ${symbol} →</button>
+        <button class="card-buy-btn holding-buy-btn" data-id="${h.launchId || launch.id}" data-mint="${mint}" data-symbol="${symbol}" data-name="${name}" data-price="${dollars(price)}">Trade ${symbol} →</button>
       `;
       grid.appendChild(card);
     }
 
     grid.querySelectorAll('.card-buy-btn').forEach(btn => {
       btn.addEventListener('click', () => openBuyModal({
+        id:     btn.dataset.id,
         mint:   btn.dataset.mint,
         symbol: btn.dataset.symbol,
         name:   btn.dataset.name,
@@ -290,7 +292,8 @@
 
   function makeBuyLink(launch) {
     const mint = launch.mint || '';
-    const url  = AQUA_SITE;
+    const id   = launch.id || '';
+    const url  = id ? `${AQUA_SITE}/#/token/${id}` : AQUA_SITE;
     const a = document.createElement('a');
     a.className = 'buy-inline-btn';
     a.href = url;
