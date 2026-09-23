@@ -337,15 +337,24 @@
     }
 
     for (const h of holdings) {
-      const launch  = allLaunches.find(l => l.id === h.launchId || l.mint === h.mint) || {};
-      const market  = pricesMap.get(h.launchId || launch.id) || null;
-      const symbol  = String(h.symbol || launch.symbol || 'TOKEN').toUpperCase();
-      const name    = h.name || launch.name || 'Token';
-      const amount  = num(h.amount || h.balance);
-      const price   = val(market, launch, 'priceUsd');
-      const valueUsd = (amount !== null && num(price) !== null) ? dollars(amount * num(price)) : 'n/a';
-      const mint    = h.mint || launch.mint || '';
-      const launchObj = { ...launch, mint, symbol, name };
+      const launchData = h.launch || h;
+      const launchId   = launchData.id || h.launchId;
+      const mint       = launchData.mint || h.mint;
+      const symbol     = String(launchData.symbol || h.symbol || 'TOKEN').toUpperCase();
+      const name       = launchData.name || h.name || 'Token';
+      const decimals   = launchData.tokenDecimals ?? launchData.decimals ?? 6;
+      
+      let amount = num(h.amount || h.balance);
+      if (h.balanceRaw) {
+        amount = Number(h.balanceRaw) / Math.pow(10, decimals);
+      }
+
+      // Try to get live price from global map, fallback to snapshot price in holding
+      const market = pricesMap.get(launchId) || null;
+      const price  = val(market, launchData, 'priceUsd') || launchData.priceUsd || 0;
+      const valueUsd = h.valueUsd !== undefined ? h.valueUsd : ((amount !== null && price) ? (amount * price) : null);
+
+      const launchObj = { ...launchData, id: launchId, mint, symbol, name, decimals };
 
       const card = document.createElement('article');
       card.className = 'holding-card';
@@ -358,7 +367,7 @@
           </div>
         </div>
         <div class="holding-amount">${amount !== null ? amount.toLocaleString('en-US', {maximumFractionDigits: 4}) : 'n/a'} <span style="font-size:13px;color:var(--quiet);font-weight:500">${symbol}</span></div>
-        <div class="holding-value">≈ ${valueUsd} · ${dollars(price)} each</div>
+        <div class="holding-value">≈ ${valueUsd !== null ? dollars(valueUsd) : 'n/a'} · ${dollars(price)} each</div>
         <button class="card-buy-btn holding-buy-btn">Swap ${symbol} →</button>
       `;
       card.querySelector('.holding-buy-btn').addEventListener('click', () => {
@@ -529,6 +538,7 @@
     btn.addEventListener('click', () => {
       $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b === btn); b.setAttribute('aria-selected', b === btn); });
       $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === btn.dataset.tab));
+      localStorage.setItem('orca_tab', btn.dataset.tab);
     });
   });
 
@@ -571,6 +581,13 @@
       localStorage.setItem('orca_wallet', walletAddr);
       onWalletConnected();
     }).catch(() => {});
+  }
+
+  // Restore active tab
+  const activeTab = localStorage.getItem('orca_tab');
+  if (activeTab) {
+    const targetBtn = document.querySelector(`.nav-link[data-tab="${activeTab}"]`);
+    if (targetBtn) targetBtn.click();
   }
 
   loadMarkets();
