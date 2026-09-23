@@ -1074,8 +1074,9 @@
   if (hasVisited) {
     landing.style.display = 'none';
     appShell.style.display = '';
-  } else {
-    enterBtn?.addEventListener('click', enterApp);
   }
+
+  // Always wire the button — needed when returning via the Home tab
+  enterBtn?.addEventListener('click', enterApp);
 
 })();

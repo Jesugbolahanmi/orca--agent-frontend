@@ -976,23 +976,69 @@ dd {
 /* ────────────────────────────────────────────────────────────────────────────
    RESPONSIVE
    ──────────────────────────────────────────────────────────────────────────── */
+
+/* Tablet */
 @media (max-width: 960px) {
   .market-grid, .portfolio-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .market-grid { gap: 14px; }
 }
+
+/* Mobile */
 @media (max-width: 680px) {
-  .topbar, .nav, .page { padding-left: 18px; padding-right: 18px; }
-  .topbar { min-height: 58px; gap: 10px; }
+  /* Topbar */
+  .topbar { padding: 0 16px; min-height: 54px; gap: 10px; }
   .strapline { display: none; }
-  .source-label { font-size: 11px; }
-  .page { padding-top: 40px; }
-  .intro { align-items: flex-start; flex-direction: column; }
+  .source-label { font-size: 10px; letter-spacing: 0; }
+  .wordmark { font-size: 17px; }
+  .x-link svg { width: 15px; height: 15px; }
+
+  /* Wallet btn */
+  .wallet-btn { font-size: 11px; padding: 7px 10px; }
+
+  /* Nav */
+  .nav { padding: 0 16px; gap: 4px; overflow-x: auto; }
+  .nav-link { font-size: 12px; padding: 0 10px; white-space: nowrap; }
+
+  /* Page */
+  .page { padding: 24px 16px; }
+
+  /* Intro header */
+  .intro { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .intro h1 { font-size: clamp(1.4rem, 6vw, 2rem); }
   .refresh-button { width: 100%; text-align: center; }
-  .market-toolbar { flex-direction: column; }
+
+  /* Market toolbar */
+  .market-toolbar { flex-direction: column; gap: 10px; margin-bottom: 16px; }
   .search-field { width: 100%; }
-  .market-grid, .portfolio-grid { grid-template-columns: 1fr; }
-  .token-card { min-height: 230px; }
-  .message { max-width: 96%; }
-  .wallet-btn { font-size: 11px; padding: 7px 12px; }
+  .market-state { min-height: 44px; padding: 10px 14px; }
+
+  /* Market grid — single column on mobile */
+  .market-grid, .portfolio-grid { grid-template-columns: 1fr; gap: 12px; }
+  .token-card { min-height: auto; padding: 16px; }
+  .price { font-size: 20px; }
+  .metrics { gap: 6px; }
+  .metrics dt { font-size: 8px; }
+  .metrics dd { font-size: 10px; }
+
+  /* Pagination */
+  .pagination-controls { gap: 6px; margin-top: 8px; }
+  .page-btn { padding: 5px 10px; font-size: 11px; }
+
+  /* Agent chat */
+  .agent-intro { padding-bottom: 0; }
+  .agent-intro h1 { font-size: clamp(1.3rem, 6vw, 2rem); }
+  .quick-reads { gap: 6px; }
+  .quick-reads button { font-size: 11px; padding: 6px 10px; }
+  .message { max-width: 96%; font-size: 13px; }
+  .ask-form input { font-size: 14px; padding: 10px 12px; }
+  .ask-form button { font-size: 13px; padding: 0 16px; }
+
+  /* Portfolio */
+  .portfolio-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .connect-prompt-icon { width: 44px; height: 44px; }
+
+  /* Swap modal */
+  .swap-modal-box { padding: 20px 16px; margin: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -1061,7 +1107,7 @@ dd {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 1.1rem;
+  gap: 1.4rem;
   padding: 2rem 1.5rem;
   max-width: 600px;
   width: 100%;
@@ -1136,9 +1182,10 @@ dd {
 
 /* Typewriter */
 .landing-typewriter {
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--quiet);
-  min-height: 1.4rem;
+  min-height: 1.6rem;
+  line-height: 1.7;
   animation: fadeIn 0.5s 0.3s ease both;
 }
 .landing-typewriter::after {
@@ -1204,9 +1251,14 @@ dd {
 }
 .landing-caption strong { color: var(--aqua); font-weight: 600; }
 
-@media (max-width: 480px) {
-  .landing-features { grid-template-columns: 1fr; }
-  .landing-title { font-size: clamp(2.2rem, 12vw, 3.5rem); }
+@media (max-width: 640px) {
+  .landing-features { grid-template-columns: 1fr; gap: 0.5rem; }
+  .landing-title { font-size: clamp(2.4rem, 12vw, 3.5rem); }
+  .landing-inner { gap: 1.1rem; padding: 1.5rem 1.25rem; }
+  .landing-badge { font-size: 0.68rem; padding: 0.28rem 0.75rem; }
+  .landing-typewriter { font-size: 0.88rem; }
+  .landing-feat { padding: 0.6rem 0.75rem; gap: 0.6rem; }
+  .landing-enter { padding: 0.75rem 1.8rem; font-size: 0.95rem; }
 }
 
 /* App Shell */
