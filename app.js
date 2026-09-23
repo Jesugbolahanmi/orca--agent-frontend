@@ -25,6 +25,7 @@
   let chatHistory = JSON.parse(localStorage.getItem('orca_chat') || '[]');
   let pendingBuyTarget = null;
   let pendingSellTarget = null;
+  let lastPrompt = null;
 
   // ── Status ────────────────────────────────────────────────────────────────
   function setStatus(text, kind = '') {
@@ -629,6 +630,18 @@
   function agentReply(prompt) {
     const raw = prompt.trim();
     const q   = raw.toLowerCase();
+
+    if (/\b(check again|again|do it again|retry|refresh)\b/.test(q)) {
+      if (lastPrompt) {
+        return agentReply(lastPrompt);
+      }
+      return { text: "I don't have a previous command to repeat.", link: null };
+    }
+    
+    // Save valid prompts for 'check again' logic (excluding conversational/flow stops)
+    if (!['cancel', 'stop', 'no', 'yes'].includes(q)) {
+      lastPrompt = raw;
+    }
 
     if (!allLaunches.length) {
       return { text: 'Market data is still loading. Please try again in a moment.', link: null };
