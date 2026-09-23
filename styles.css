@@ -1139,20 +1139,14 @@ dd {
   flex: 1;
   max-width: 500px;
   text-align: left;
-  padding: 2rem;
-  background: rgba(20, 20, 18, 0.4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  padding: 0 1rem;
 }
 .landing-story .story-title {
   color: var(--ink);
-  font-size: 1.8rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  margin-bottom: 1.2rem;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  margin-bottom: 1.5rem;
   background: linear-gradient(135deg, var(--ink), var(--quiet));
   -webkit-background-clip: text;
   background-clip: text;
@@ -1160,9 +1154,9 @@ dd {
 }
 .landing-story p {
   color: var(--quiet);
-  font-size: 0.95rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-bottom: 1.2rem;
 }
 .landing-story p strong {
   color: var(--aqua);
@@ -1358,7 +1352,7 @@ dd {
     width: 100%;
   }
   .landing-story {
-    padding: 1.5rem;
+    padding: 0 1rem;
     margin-bottom: 2rem;
   }
 }
