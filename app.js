@@ -24,6 +24,7 @@
   let loadingPort = false;
   let chatHistory = JSON.parse(localStorage.getItem('orca_chat') || '[]');
   let pendingBuyTarget = null;
+  let pendingSellTarget = null;
 
   // ── Status ────────────────────────────────────────────────────────────────
   function setStatus(text, kind = '') {
@@ -133,7 +134,108 @@
     }
   }
 
-  // ── Swap Quote Flow ────────────────────────────────────────────────────────
+  // ── Swap Quote Flow (Sell) ──────────────────────────────────────────────────
+  async function triggerSellFlow(launch, tokenAmount) {
+    const symbol    = (launch.symbol || 'TOKEN').toUpperCase();
+    const aquaUrl   = `https://aquafamily.fun/#/token/${launch.id || launch.mint}`;
+    const orcaUrl   = launch.whirlpoolAddress ? `https://www.orca.so/pools/${launch.whirlpoolAddress}` : null;
+
+    if (!launch.mint) {
+      addMessage(`No mint address found for ${symbol}. Cannot get a quote.`, 'agent');
+      return;
+    }
+
+    const decimals = launch.tokenDecimals ?? launch.decimals ?? 6;
+    const rawAmount = Math.round(tokenAmount * Math.pow(10, decimals));
+
+    try {
+      const quoteRes = await fetch(
+        `${JUP_PROXY}?endpoint=quote` +
+        `&inputMint=${encodeURIComponent(launch.mint)}` +
+        `&outputMint=${encodeURIComponent(SOL_MINT)}` +
+        `&amount=${rawAmount}` +
+        `&slippageBps=50`
+      );
+
+      if (!quoteRes.ok) {
+        let errDetail = '';
+        try {
+          const errBody = await quoteRes.json();
+          errDetail = errBody.error || errBody.message || '';
+        } catch (_) {}
+
+        if (quoteRes.status === 400) {
+          const card = document.createElement('div');
+          card.className = 'swap-quote-card swap-quote-no-route';
+          card.innerHTML = `
+            <div class="swap-no-route-icon">⚠️</div>
+            <p class="swap-no-route-msg">
+              <strong>No Jupiter route found for ${symbol}.</strong><br>
+              ${symbol} trades in an Orca CLMM pool that Jupiter doesn't currently index.
+              You can swap it directly on AQUA or Orca:
+            </p>
+            <div class="swap-fallback-links">
+              <a class="swap-fallback-btn" href="${aquaUrl}" target="_blank" rel="noopener">🌊 Trade on AQUA ↗</a>
+              ${orcaUrl ? `<a class="swap-fallback-btn orca" href="${orcaUrl}" target="_blank" rel="noopener">🐳 Orca Pool ↗</a>` : ''}
+            </div>
+          `;
+          addMessage('', 'agent', card, false);
+          return;
+        }
+        throw new Error(`Quote API returned ${quoteRes.status}${errDetail ? ': ' + errDetail : ''}`);
+      }
+
+      const quote = await quoteRes.json();
+      if (quote.error) throw new Error(quote.error);
+
+      const inDisplay = tokenAmount.toLocaleString('en-US', { maximumSignificantDigits: 6 });
+      const outSol    = (Number(quote.outAmount) / 1e9).toFixed(4);
+      const impact    = parseFloat(quote.priceImpactPct || 0);
+      const impactPct = (impact < 0.01 ? '<0.01' : impact.toFixed(2)) + '%';
+
+      const card   = document.createElement('div');
+      const btnId  = 'scb_' + Date.now();
+      card.className = 'swap-quote-card';
+      card.innerHTML = `
+        <div class="swap-route">
+          <span class="swap-in">${inDisplay} ${symbol}</span>
+          <span class="swap-arrow">→</span>
+          <span class="swap-out">~${outSol} SOL</span>
+        </div>
+        <div class="swap-meta">
+          <span>Slippage: 0.5%</span>
+          <span>Price impact: ${impactPct}</span>
+        </div>
+        <button class="swap-confirm-btn" id="${btnId}">⚡ Confirm Swap in Wallet</button>
+      `;
+
+      addMessage('', 'agent', card, false);
+
+      document.getElementById(btnId).addEventListener('click', async function () {
+        if (!walletAddr) {
+          addMessage('Please connect your wallet first (top-right button).', 'agent');
+          return;
+        }
+        await executeSwap(quote, launch, this);
+      });
+
+    } catch (err) {
+      console.error(err);
+      const card = document.createElement('div');
+      card.className = 'swap-quote-card swap-quote-no-route';
+      card.innerHTML = `
+        <div class="swap-no-route-icon">❌</div>
+        <p class="swap-no-route-msg"><strong>Couldn't get a quote for ${symbol}.</strong><br>${err.message}</p>
+        <div class="swap-fallback-links">
+          <a class="swap-fallback-btn" href="${aquaUrl}" target="_blank" rel="noopener">🌊 Trade on AQUA ↗</a>
+          ${orcaUrl ? `<a class="swap-fallback-btn orca" href="${orcaUrl}" target="_blank" rel="noopener">🐳 Orca Pool ↗</a>` : ''}
+        </div>
+      `;
+      addMessage('', 'agent', card, false);
+    }
+  }
+
+  // ── Swap Quote Flow (Buy) ──────────────────────────────────────────────────
   // Calls Jupiter via our Vercel proxy (avoids CORS), shows an inline quote card.
   async function triggerBuyFlow(launch, solAmount) {
     const symbol    = (launch.symbol || 'TOKEN').toUpperCase();
@@ -287,7 +389,7 @@
       confirmBtn.style.background = 'var(--up)';
       confirmBtn.style.color = '#0a1a0d';
       addMessage(
-        `✅ Swap submitted! ${symbol} purchase is on-chain.\nTx: ${signature.slice(0,8)}…${signature.slice(-6)}`,
+        `✅ Swap submitted! Transaction is on-chain.\nTx: ${signature.slice(0,8)}…${signature.slice(-6)}`,
         'agent'
       );
 
@@ -496,6 +598,23 @@
       }
     }
 
+    // ── Pending sell amount ──────────────────────────────────────────────────
+    if (pendingSellTarget) {
+      const tokenAmount = parseFloat(q);
+      if (q === 'cancel' || q === 'stop') {
+        pendingSellTarget = null;
+        return { text: 'Sell cancelled. What else can I help you with?', link: null };
+      }
+      if (!isNaN(tokenAmount) && tokenAmount > 0) {
+        const launch = pendingSellTarget;
+        pendingSellTarget = null;
+        setTimeout(() => triggerSellFlow(launch, tokenAmount), 300);
+        return { text: `Getting a quote for ${tokenAmount} ${(launch.symbol || '').toUpperCase()} → SOL…`, link: null };
+      } else {
+        return { text: 'Please enter a valid amount of tokens to sell, or type "cancel".', link: null };
+      }
+    }
+
     // ── Helper: get live data for a token ──────────────────────────────────
     function getLaunchData(l) {
       const m = pricesMap.get(l.id) || null;
@@ -556,6 +675,25 @@
         } else {
           pendingBuyTarget = launch;
           return { text: `How much SOL worth of ${(launch.symbol || '').toUpperCase()} would you like to buy? (e.g., 0.1)\nType "cancel" to abort.`, link: null };
+        }
+      }
+      return { text: `I couldn't find "${target}" on the AQUA Launchpad. Check the spelling or browse the Market tab.`, link: null };
+    }
+
+    // ── Sell intent — supports: "sell aqua", "sell 100 aqua" ──
+    const sellMatch = q.match(/^sell\s+(?:(\d+\.?\d*)\s+)?\$?(.+)/);
+    if (sellMatch) {
+      const amountStr = sellMatch[1];
+      const target    = sellMatch[2].trim();
+      const launch    = findToken(target);
+      if (launch) {
+        if (amountStr) {
+          const tokenAmount = parseFloat(amountStr);
+          setTimeout(() => triggerSellFlow(launch, tokenAmount), 300);
+          return { text: `Getting a quote for ${tokenAmount} ${(launch.symbol || '').toUpperCase()} → SOL…`, link: null };
+        } else {
+          pendingSellTarget = launch;
+          return { text: `How many ${(launch.symbol || '').toUpperCase()} tokens would you like to sell? (e.g., 1000)\nType "cancel" to abort.`, link: null };
         }
       }
       return { text: `I couldn't find "${target}" on the AQUA Launchpad. Check the spelling or browse the Market tab.`, link: null };
