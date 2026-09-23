@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
-  <!-- Jupiter Terminal -->
-  <script src="https://terminal.jup.ag/main-v3.js" data-preload></script>
+  <!-- Solana web3.js for building/deserializing swap transactions -->
+  <script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
 </head>
 <body>
 
@@ -105,24 +105,7 @@
 
   </main>
 
-  <!-- ── Swap Modal (Jupiter Terminal) ───────────────────────────────────── -->
-  <div id="swapModal" class="swap-modal" hidden aria-modal="true" role="dialog" aria-labelledby="swapModalTitle">
-    <div class="swap-modal-card">
-      <div class="swap-modal-header">
-        <div class="swap-modal-token-info">
-          <div class="buy-modal-initials" id="swapModalInitials">—</div>
-          <div>
-            <div class="buy-modal-name" id="swapModalName">Token</div>
-            <div class="buy-modal-price" id="swapModalPrice"></div>
-          </div>
-        </div>
-        <button class="buy-modal-close" id="swapModalClose" aria-label="Close swap">✕</button>
-      </div>
-      <h2 id="swapModalTitle" class="swap-modal-title">Swap on Jupiter</h2>
-      <!-- Jupiter Terminal mounts here -->
-      <div id="jupiter-terminal-container"></div>
-    </div>
-  </div>
+
 
   <script src="./config.js"></script>
   <script src="./env.js"></script>

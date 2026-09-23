@@ -1,6 +1,6 @@
 (() => {
-  const AQUA_API    = '';
-  const AQUA_SITE   = 'https://aquafamily.fun';
+  const AQUA_API  = '';
+  const SOL_MINT  = 'So11111111111111111111111111111111111111112';
   const $  = id => document.getElementById(id);
   const $$ = sel => document.querySelectorAll(sel);
 
@@ -16,11 +16,11 @@
   const shortAddr = a => a ? a.slice(0, 4) + '…' + a.slice(-4) : '';
 
   // ── State ─────────────────────────────────────────────────────────────────
-  let allLaunches  = [];
-  let pricesMap    = new Map();
-  let walletAddr   = null;
-  let loadingMkt   = false;
-  let loadingPort  = false;
+  let allLaunches = [];
+  let pricesMap   = new Map();
+  let walletAddr  = null;
+  let loadingMkt  = false;
+  let loadingPort = false;
 
   // ── Status ────────────────────────────────────────────────────────────────
   function setStatus(text, kind = '') {
@@ -115,83 +115,138 @@
           <div><dt>Vol 24h</dt><dd>${dollars(vol)}</dd></div>
           <div><dt>Holders</dt><dd>${holders !== null ? Number(holders).toLocaleString() : 'n/a'}</dd></div>
         </dl>
-        <button class="card-buy-btn" data-id="${launch.id}" data-mint="${launch.mint || ''}" data-symbol="${symbol}" data-name="${launch.name || 'Token'}" data-price="${dollars(price)}">Buy ${symbol} →</button>
+        <button class="card-buy-btn" data-id="${launch.id}" data-mint="${launch.mint || ''}" data-symbol="${symbol}" data-name="${launch.name || 'Token'}">Buy ${symbol} →</button>
       `;
       grid.appendChild(card);
     }
 
-    // Buy button listeners on cards
     grid.querySelectorAll('.card-buy-btn').forEach(btn => {
-      btn.addEventListener('click', () => openSwapModal({
-        id:     btn.dataset.id,
-        mint:   btn.dataset.mint,
-        symbol: btn.dataset.symbol,
-        name:   btn.dataset.name,
-        price:  btn.dataset.price,
-      }));
+      btn.addEventListener('click', () => {
+        const launch = allLaunches.find(l => l.id === btn.dataset.id);
+        if (launch) triggerBuyFlow(launch, 0.1);
+      });
     });
   }
 
-  // ── Swap Modal (Jupiter Terminal) ────────────────────────────────────────
-  function openSwapModal({ id, mint, symbol, name, price }) {
-    const modal = $('swapModal');
-    if (!modal) return;
+  // ── Swap Quote Flow ────────────────────────────────────────────────────────
+  // Fetches a Jupiter quote and renders an inline confirmation card in the chat.
+  async function triggerBuyFlow(launch, solAmount) {
+    const symbol = (launch.symbol || 'TOKEN').toUpperCase();
 
-    // Populate header info
-    $('swapModalInitials').textContent = (symbol || 'TKN').slice(0, 4);
-    $('swapModalName').textContent     = name || 'Token';
-    $('swapModalPrice').textContent    = price || '';
+    if (!launch.mint) {
+      addMessage(`No mint address found for ${symbol}. Cannot get a quote.`, 'agent');
+      return;
+    }
 
-    modal.hidden = false;
-    document.body.style.overflow = 'hidden';
+    addMessage(`Fetching quote: ${solAmount} SOL → ${symbol}…`, 'agent');
 
-    // Mount Jupiter Terminal into our container
-    const container = $('jupiter-terminal-container');
-    container.innerHTML = ''; // clear any previous instance
+    const lamports = Math.round(solAmount * 1e9);
 
-    if (window.Jupiter) {
-      window.Jupiter.init({
-        displayMode: 'integrated',
-        integratedTargetId: 'jupiter-terminal-container',
-        endpoint: 'https://mainnet.helius-rpc.com/?api-key=1b5d20e4-7d59-4a80-9e2e-4d6f7e1a8c2f',
-        // Pre-select output token to the exact mint
-        initialOutputMint: mint || undefined,
-        // Use SOL as default input
-        initialInputMint: 'So11111111111111111111111111111111111111112',
-        // Dark theme to match our UI
-        appearance: 'dark',
-        // Restrict to this token pair
-        strictTokenList: false,
-        // Make it compact
-        formProps: {
-          fixedOutputMint: !!mint,
-        },
+    try {
+      const quoteRes = await fetch(
+        `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${launch.mint}&amount=${lamports}&slippageBps=50`
+      );
+      if (!quoteRes.ok) throw new Error(`Quote API returned ${quoteRes.status}`);
+      const quote = await quoteRes.json();
+      if (quote.error) throw new Error(quote.error);
+
+      // Calculate display values
+      const decimals   = launch.decimals ?? 9;
+      const outRaw     = Number(quote.outAmount);
+      const outDisplay = (outRaw / Math.pow(10, decimals)).toLocaleString('en-US', { maximumSignificantDigits: 6 });
+      const inSol      = (Number(quote.inAmount) / 1e9).toFixed(4);
+      const impact     = parseFloat(quote.priceImpactPct || 0);
+      const impactPct  = (impact < 0.01 ? '<0.01' : impact.toFixed(2)) + '%';
+
+      // Build the inline swap card
+      const card = document.createElement('div');
+      card.className = 'swap-quote-card';
+      card.innerHTML = `
+        <div class="swap-route">
+          <span class="swap-in">${inSol} SOL</span>
+          <span class="swap-arrow">→</span>
+          <span class="swap-out">~${outDisplay} ${symbol}</span>
+        </div>
+        <div class="swap-meta">
+          <span>Slippage: 0.5%</span>
+          <span>Price impact: ${impactPct}</span>
+        </div>
+        <button class="swap-confirm-btn" id="swapConfirmBtn_${Date.now()}">⚡ Confirm Swap in Wallet</button>
+      `;
+
+      addMessage('', 'agent', card);
+
+      // Wire confirm button
+      card.querySelector('[id^="swapConfirmBtn_"]').addEventListener('click', async function () {
+        if (!walletAddr) {
+          addMessage('Please connect your wallet first using the button in the top-right.', 'agent');
+          return;
+        }
+        await executeSwap(quote, launch, this);
       });
-    } else {
-      // Fallback if Jupiter script didn't load
-      container.innerHTML = `
-        <div style="padding:40px;text-align:center;color:var(--quiet);">
-          <p style="margin-bottom:16px;">Jupiter Terminal failed to load.</p>
-          <a href="https://aquafamily.fun/#/token/${id}" target="_blank" rel="noopener"
-             style="color:var(--aqua);font-weight:700;">Open on AQUA Family instead →</a>
-        </div>`;
+
+    } catch (err) {
+      console.error(err);
+      addMessage(`Couldn't get a quote: ${err.message}`, 'agent');
     }
   }
 
-  function closeSwapModal() {
-    const modal = $('swapModal');
-    if (!modal) return;
-    modal.hidden = true;
-    document.body.style.overflow = '';
-    // Destroy Jupiter instance to free memory
-    if (window.Jupiter?.close) window.Jupiter.close();
-    const container = $('jupiter-terminal-container');
-    if (container) container.innerHTML = '';
-  }
+  async function executeSwap(quote, launch, confirmBtn) {
+    const symbol = (launch.symbol || 'TOKEN').toUpperCase();
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Building transaction…';
 
-  $('swapModalClose')?.addEventListener('click', closeSwapModal);
-  $('swapModal')?.addEventListener('click', e => { if (e.target === $('swapModal')) closeSwapModal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSwapModal(); });
+    try {
+      // 1. Get swap transaction from Jupiter
+      const swapRes = await fetch('https://quote-api.jup.ag/v6/swap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quoteResponse: quote,
+          userPublicKey: walletAddr,
+          wrapAndUnwrapSol: true,
+          dynamicComputeUnitLimit: true,
+          prioritizationFeeLamports: 'auto',
+        }),
+      });
+      if (!swapRes.ok) throw new Error(`Swap API returned ${swapRes.status}`);
+      const { swapTransaction } = await swapRes.json();
+      if (!swapTransaction) throw new Error('No transaction returned from swap API');
+
+      // 2. Deserialize (requires @solana/web3.js loaded via CDN)
+      confirmBtn.textContent = 'Waiting for wallet…';
+      const txBytes = Uint8Array.from(atob(swapTransaction), c => c.charCodeAt(0));
+
+      let signature;
+      if (window.solanaWeb3) {
+        const tx = window.solanaWeb3.VersionedTransaction.deserialize(txBytes);
+        const result = await window.solana.signAndSendTransaction(tx);
+        signature = result.signature;
+      } else {
+        // Fallback: pass raw bytes directly (works with some wallets)
+        const result = await window.solana.signAndSendTransaction({ serialize: () => txBytes });
+        signature = result.signature;
+      }
+
+      // 3. Success
+      confirmBtn.textContent = '✅ Submitted!';
+      confirmBtn.style.background = 'var(--up)';
+      confirmBtn.style.color = '#0a1a0d';
+      addMessage(
+        `✅ Swap submitted! ${symbol} purchase is on-chain.\nTx: ${signature.slice(0,8)}…${signature.slice(-6)}`,
+        'agent'
+      );
+
+    } catch (err) {
+      console.error(err);
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = '⚡ Confirm Swap in Wallet';
+      const msg = err.message?.toLowerCase().includes('reject') || err.message?.toLowerCase().includes('cancel')
+        ? 'Transaction cancelled by wallet.'
+        : `Swap failed: ${err.message}`;
+      addMessage(msg, 'agent');
+    }
+  }
 
   // ── Wallet ────────────────────────────────────────────────────────────────
   async function connectWallet() {
@@ -216,12 +271,10 @@
   }
 
   function onWalletConnected() {
-    // Update both wallet buttons
     $$('.wallet-btn').forEach(btn => {
       btn.textContent = shortAddr(walletAddr);
       btn.classList.add('is-connected');
     });
-    // Show portfolio
     renderPortfolioShell();
     loadPortfolio();
   }
@@ -234,7 +287,7 @@
     $('portfolioContent').innerHTML = `
       <div class="connect-prompt">
         <div class="connect-prompt-icon">◎</div>
-        <p>Connect your Phantom wallet to see your AQUA Launchpad holdings.</p>
+        <p>Connect your wallet to see your AQUA Launchpad holdings.</p>
         <button class="wallet-btn" id="portfolioConnectBtn">Connect Wallet</button>
       </div>`;
     $('portfolioConnectBtn')?.addEventListener('click', connectWallet);
@@ -285,14 +338,15 @@
     }
 
     for (const h of holdings) {
-      const launch = allLaunches.find(l => l.id === h.launchId || l.mint === h.mint) || {};
-      const market = pricesMap.get(h.launchId || launch.id) || null;
-      const symbol = String(h.symbol || launch.symbol || 'TOKEN').toUpperCase();
-      const name   = h.name || launch.name || 'Token';
-      const amount = num(h.amount || h.balance);
-      const price  = val(market, launch, 'priceUsd');
+      const launch  = allLaunches.find(l => l.id === h.launchId || l.mint === h.mint) || {};
+      const market  = pricesMap.get(h.launchId || launch.id) || null;
+      const symbol  = String(h.symbol || launch.symbol || 'TOKEN').toUpperCase();
+      const name    = h.name || launch.name || 'Token';
+      const amount  = num(h.amount || h.balance);
+      const price   = val(market, launch, 'priceUsd');
       const valueUsd = (amount !== null && num(price) !== null) ? dollars(amount * num(price)) : 'n/a';
-      const mint   = h.mint || launch.mint || '';
+      const mint    = h.mint || launch.mint || '';
+      const launchObj = { ...launch, mint, symbol, name };
 
       const card = document.createElement('article');
       card.className = 'holding-card';
@@ -306,20 +360,17 @@
         </div>
         <div class="holding-amount">${amount !== null ? amount.toLocaleString('en-US', {maximumFractionDigits: 4}) : 'n/a'} <span style="font-size:13px;color:var(--quiet);font-weight:500">${symbol}</span></div>
         <div class="holding-value">≈ ${valueUsd} · ${dollars(price)} each</div>
-        <button class="card-buy-btn holding-buy-btn" data-id="${h.launchId || launch.id}" data-mint="${mint}" data-symbol="${symbol}" data-name="${name}" data-price="${dollars(price)}">Trade ${symbol} →</button>
+        <button class="card-buy-btn holding-buy-btn">Swap ${symbol} →</button>
       `;
+      card.querySelector('.holding-buy-btn').addEventListener('click', () => {
+        // Switch to agent tab and trigger buy
+        $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b.dataset.tab === 'agent'); b.setAttribute('aria-selected', b.dataset.tab === 'agent'); });
+        $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'agent'));
+        addMessage(`buy ${name}`, 'user');
+        setTimeout(() => triggerBuyFlow(launchObj, 0.1), 200);
+      });
       grid.appendChild(card);
     }
-
-    grid.querySelectorAll('.card-buy-btn').forEach(btn => {
-      btn.addEventListener('click', () => openBuyModal({
-        id:     btn.dataset.id,
-        mint:   btn.dataset.mint,
-        symbol: btn.dataset.symbol,
-        name:   btn.dataset.name,
-        price:  btn.dataset.price,
-      }));
-    });
   }
 
   // ── Agent ─────────────────────────────────────────────────────────────────
@@ -333,15 +384,13 @@
     feed.scrollTop = feed.scrollHeight;
   }
 
+  // Creates a "⚡ Swap TOKEN now" button that triggers the buy flow inline
   function makeBuyLink(launch) {
-    const mint   = launch.mint || '';
-    const id     = launch.id   || '';
     const symbol = (launch.symbol || 'TOKEN').toUpperCase();
-    const name   = launch.name || 'Token';
     const btn = document.createElement('button');
     btn.className = 'buy-inline-btn';
     btn.textContent = `⚡ Swap ${symbol} now`;
-    btn.addEventListener('click', () => openSwapModal({ id, mint, symbol, name, price: '' }));
+    btn.addEventListener('click', () => triggerBuyFlow(launch, 0.1));
     return btn;
   }
 
@@ -352,18 +401,27 @@
       return { text: 'Market data is still loading. Please try again in a moment.', link: null };
     }
 
-    // Buy intent
-    const buyMatch = q.match(/^buy\s+(.+)/);
+    // Buy intent — supports: "buy aqua", "buy $aqua", "buy 0.5 sol of aqua", "buy 1 sol aqua"
+    const buyMatch = q.match(/^buy\s+(?:(\d+\.?\d*)\s+sol\s+(?:of\s+)?)?\$?(.+)/);
     if (buyMatch) {
-      const target = buyMatch[1].trim();
-      const launch = allLaunches.find(l =>
+      const solAmount = parseFloat(buyMatch[1]) || 0.1;
+      const target    = buyMatch[2].replace(/^\$/, '').trim();
+      const launch    = allLaunches.find(l =>
         (l.symbol || '').toLowerCase() === target ||
         (l.name   || '').toLowerCase().includes(target)
       );
       if (launch) {
-        return { text: `Opening ${launch.name} (${(launch.symbol || '').toUpperCase()}) on AQUA Family…`, link: makeBuyLink(launch) };
+        // Trigger async quote flow after the reply message is added
+        setTimeout(() => triggerBuyFlow(launch, solAmount), 250);
+        return {
+          text: `Getting a quote for ${solAmount} SOL → ${(launch.symbol || '').toUpperCase()}…`,
+          link: null,
+        };
       }
-      return { text: `I couldn't find a token matching "${buyMatch[1]}". Check the spelling or search in the Market tab.`, link: null };
+      return {
+        text: `I couldn't find a token matching "${target}". Check the spelling or browse the Market tab.`,
+        link: null,
+      };
     }
 
     // Stats
@@ -382,13 +440,13 @@
       const top = [...allLaunches].filter(l => num(val(pricesMap.get(l.id),l,'change24h')) !== null)
         .sort((a,b) => (num(val(pricesMap.get(b.id),b,'change24h'))||0) - (num(val(pricesMap.get(a.id),a,'change24h'))||0))[0];
       const chg = top ? num(val(pricesMap.get(top.id),top,'change24h')) : null;
-      return { text: top ? `Top gainer: ${top.name} (${top.symbol?.toUpperCase()}) +${chg?.toFixed(2)}% in the last 24h.` : 'No change data yet.', link: null };
+      return { text: top ? `Top gainer: ${top.name} (${top.symbol?.toUpperCase()}) +${chg?.toFixed(2)}% in 24h.` : 'No change data yet.', link: null };
     }
     if (q.includes('market status') || q.includes('status')) {
       return { text: `Market is live · ${allLaunches.length} launches · Data from AQUA Launchpad API.`, link: null };
     }
     if (q === 'help') {
-      return { text: 'I can help you with:\n• price of [token]\n• buy [token]\n• largest market cap\n• highest volume\n• top gainers\n• how many launches\n• market status', link: null };
+      return { text: 'Commands:\n• buy [token]\n• buy 0.5 sol of [token]\n• price of [token]\n• largest market cap\n• highest volume\n• top gainers\n• how many launches\n• market status', link: null };
     }
 
     // Token lookup
@@ -403,7 +461,7 @@
       return { text, link: makeBuyLink(token) };
     }
 
-    return { text: `I couldn't find "${prompt}". Try a token symbol, or ask: buy ORCA, largest market cap, top gainers, market status.`, link: null };
+    return { text: `I couldn't find "${prompt}". Try a token name, or: buy ORCA · largest market cap · top gainers · market status.`, link: null };
   }
 
   $('askForm')?.addEventListener('submit', e => {
@@ -443,13 +501,12 @@
   $('marketSearch')?.addEventListener('input', applySearch);
   $('refreshPortfolio')?.addEventListener('click', loadPortfolio);
 
-  // Wallet buttons
   $('walletBtn')?.addEventListener('click', () => {
     walletAddr ? disconnectWallet() : connectWallet();
   });
   $('portfolioConnectBtn')?.addEventListener('click', connectWallet);
 
-  // Auto-reconnect if Phantom is already connected
+  // Auto-reconnect if wallet is already trusted
   if (window.solana?.isPhantom && window.solana.isConnected) {
     window.solana.connect({ onlyIfTrusted: true }).then(resp => {
       walletAddr = resp.publicKey.toString();
