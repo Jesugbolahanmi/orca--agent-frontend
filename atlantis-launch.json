@@ -1,0 +1,20 @@
+{
+  "name": "ORCAGENT",
+  "symbol": "OAG",
+  "description": "ORCAGENT is a Solana trading co-pilot and market terminal for discovery, market reads, portfolio views, and price alerts.",
+  "stockMint": "",
+  "rewardMode": "holder_rewards",
+  "imagePath": "",
+  "xUrl": "",
+  "websiteUrl": "",
+  "telegramUrl": "",
+  "dexFundingEnabled": false,
+  "dexProfile": {
+    "description": "",
+    "bannerPath": "",
+    "bannerUrl": "",
+    "websiteUrl": "",
+    "xUrl": "",
+    "telegramUrl": ""
+  }
+}

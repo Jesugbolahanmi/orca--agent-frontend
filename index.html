@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10100f">
+  <meta name="description" content="ORCAGENT reads the public AQUA Launchpad market directory.">
+  <title>ORCAGENT | AQUA Launchpad Markets</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="wordmark" href="#market" aria-label="ORCAGENT market home">ORCAGENT</a>
+    <p class="strapline">AQUA Launchpad market reader</p>
+    <span class="source-label" id="sourceLabel">Awaiting market</span>
+  </header>
+
+  <nav class="nav" aria-label="Primary navigation">
+    <button class="nav-link is-active" type="button" data-tab="market" aria-selected="true">Market</button>
+    <button class="nav-link" type="button" data-tab="agent" aria-selected="false">Agent</button>
+  </nav>
+
+  <main class="page">
+    <section class="tab-panel is-active" id="market" aria-labelledby="marketTitle">
+      <div class="intro">
+        <div>
+          <p class="kicker">Public launch directory</p>
+          <h1 id="marketTitle">The AQUA Launchpad market.</h1>
+        </div>
+        <button class="refresh-button" id="refreshMarket" type="button">Refresh market</button>
+      </div>
+
+      <div class="market-toolbar">
+        <div class="market-state" id="marketState" role="status" aria-live="polite">
+          <span class="state-mark"></span>
+          <p>Reading AQUA Launchpad launches.</p>
+        </div>
+        <label class="search-field" for="marketSearch">
+          <span class="sr-only">Search launches</span>
+          <input id="marketSearch" type="search" autocomplete="off" placeholder="Search name or symbol">
+        </label>
+      </div>
+
+      <div class="market-grid" id="marketGrid" aria-live="polite"></div>
+      <p class="data-caption">ORCAGENT displays values returned by AQUA Family’s public launch directory. A metric remains unavailable when it is not returned for that launch.</p>
+    </section>
+
+    <section class="tab-panel" id="agent" aria-labelledby="agentTitle">
+      <div class="agent-intro">
+        <p class="kicker">Market reader</p>
+        <h1 id="agentTitle">Ask the market, not the crowd.</h1>
+        <p>ORCAGENT reads the currently loaded AQUA Launchpad directory. It does not fill missing figures with a guess.</p>
+      </div>
+
+      <div class="agent-shell">
+        <div class="quick-reads" aria-label="Quick market reads">
+          <button type="button" data-prompt="how many launches">Launch count</button>
+          <button type="button" data-prompt="largest market cap">Largest market cap</button>
+          <button type="button" data-prompt="highest volume">Highest volume</button>
+          <button type="button" data-prompt="market status">Market status</button>
+        </div>
+        <div class="conversation" id="conversation" aria-live="polite">
+          <div class="message agent-message">I am loading the AQUA Launchpad directory. Ask me about a listed token, launch count, market cap, volume, holders, or market status.</div>
+        </div>
+        <form class="ask-form" id="askForm">
+          <label class="sr-only" for="askInput">Ask ORCAGENT about the market</label>
+          <input id="askInput" type="text" autocomplete="off" placeholder="Ask about a token, volume, holders, or status">
+          <button type="submit">Ask</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="./config.js"></script>
+<script src="./env.js"></script>
+<script src="./app.js" defer></script>
+</body>
+</html>
