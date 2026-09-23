@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   url.searchParams.delete('endpoint');
   const qs = url.searchParams.toString();
 
-  const JUPITER_BASE = 'https://quote-api.jup.ag/v6';
+  const JUPITER_BASE = 'https://api.jup.ag/swap/v1';
 
   let targetUrl;
   if (endpoint === 'quote') {
