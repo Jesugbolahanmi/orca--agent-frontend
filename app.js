@@ -1062,29 +1062,32 @@
   const enterBtn   = $('landingEnter');
   const hasVisited = localStorage.getItem('orca_visited');
 
-  function enterApp() {
+  function enterApp(tabName = 'market') {
     // Show the app shell and hide landing
     appShell.style.display = '';
     landing.style.display = 'none';
     landing.classList.add('is-hidden');
     localStorage.setItem('orca_visited', '1');
-    // Restore last tab or default to market
-    const lastTab = localStorage.getItem('orca_tab') || 'market';
-    if (lastTab !== 'home') {
-      const targetBtn = document.querySelector(`.nav-link[data-tab="${lastTab}"]`);
-      if (targetBtn) {
-        $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b === targetBtn); b.setAttribute('aria-selected', b === targetBtn); });
-        $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === lastTab));
-      }
+    localStorage.setItem('orca_tab', tabName);
+    
+    // Activate the requested tab
+    const targetBtn = document.querySelector(`.nav-link[data-tab="${tabName}"]`);
+    if (targetBtn) {
+      $$('.nav-link').forEach(b => { b.classList.toggle('is-active', b === targetBtn); b.setAttribute('aria-selected', b === targetBtn); });
+      $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === tabName));
     }
   }
 
-  if (hasVisited) {
+  if (hasVisited && localStorage.getItem('orca_tab') !== 'home') {
     landing.style.display = 'none';
     appShell.style.display = '';
   }
 
-  // Always wire the button — needed when returning via the Home tab
-  enterBtn?.addEventListener('click', enterApp);
+  // Always wire the buttons — needed when returning via the Home tab
+  $$('.landing-enter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      enterApp(btn.dataset.target || 'market');
+    });
+  });
 
 })();
