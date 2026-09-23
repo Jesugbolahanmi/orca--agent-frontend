@@ -1117,7 +1117,7 @@ dd {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 5rem;
+  gap: 3.5rem;
   max-width: 1240px;
   width: 100%;
   padding: 2rem 2rem 6rem;
@@ -1154,13 +1154,14 @@ dd {
 .landing-story {
   width: 100%;
   text-align: left;
-  padding: 0;
+  padding-left: 2rem;
+  border-left: 2px solid rgba(142,203,197,.2);
 }
 .landing-story .story-title {
   color: var(--ink);
-  font-size: 2.4rem;
+  font-size: 2.6rem;
   font-weight: 900;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
   margin-bottom: 1.5rem;
   background: linear-gradient(135deg, var(--ink), var(--quiet));
   -webkit-background-clip: text;
@@ -1170,9 +1171,9 @@ dd {
 }
 .landing-story p {
   color: var(--quiet);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   line-height: 1.7;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.25rem;
   text-align: left;
 }
 .landing-story p strong {
@@ -1187,32 +1188,6 @@ dd {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-/* Logo */
-.landing-logo-wrap {
-  position: relative;
-  width: 88px;
-  height: 88px;
-  margin-bottom: 0.3rem;
-  animation: float 5s ease-in-out infinite;
-}
-.landing-logo {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--aqua-glow-strong);
-  box-shadow: 0 0 28px rgba(142,203,197,.2);
-  position: relative;
-  z-index: 1;
-}
-.landing-logo-ring {
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 1px solid rgba(142,203,197,.4);
-  animation: ringPulse 2.6s ease-out infinite;
 }
 
 /* Badge */
@@ -1241,7 +1216,7 @@ dd {
 
 /* Title */
 .landing-title {
-  font-size: clamp(2.6rem, 9vw, 4.5rem);
+  font-size: clamp(3.5rem, 10vw, 5.5rem);
   font-weight: 900;
   letter-spacing: -0.05em;
   line-height: 1;
@@ -1257,7 +1232,7 @@ dd {
 
 /* Typewriter */
 .landing-typewriter {
-  font-size: 1rem;
+  font-size: 1.25rem;
   color: var(--quiet);
   min-height: 1.6rem;
   line-height: 1.7;
@@ -1274,25 +1249,25 @@ dd {
 .landing-features {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
+  gap: 1rem;
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
 }
 .landing-feat {
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  padding: 0.7rem 0.9rem;
-  background: var(--panel);
-  border: 1px solid var(--line);
+  padding: 1rem;
+  background: rgba(20, 20, 18, 0.4);
+  border: 1px solid rgba(142,203,197, 0.15);
   border-radius: var(--radius);
   text-align: left;
   transition: border-color 0.2s;
 }
-.landing-feat:hover { border-color: var(--aqua-glow); }
-.landing-feat-icon  { font-size: 1.25rem; flex-shrink: 0; }
-.landing-feat-label { font-size: 0.8rem;  font-weight: 600; color: var(--ink); }
-.landing-feat-sub   { font-size: 0.7rem;  color: var(--quiet); margin-top: 1px; }
+.landing-feat:hover { border-color: rgba(142,203,197,.5); background: rgba(142,203,197,.05); }
+.landing-feat-icon  { font-size: 1.4rem; flex-shrink: 0; color: var(--aqua); }
+.landing-feat-label { font-size: 0.85rem; font-weight: 700; color: var(--ink); }
+.landing-feat-sub   { font-size: 0.75rem; color: var(--quiet); margin-top: 2px; }
 
 /* CTAs */
 .landing-actions {
@@ -1307,11 +1282,11 @@ dd {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.7rem 1.6rem;
+  padding: 0.8rem 1.8rem;
   background: var(--aqua);
   color: #0a0f0e;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1rem;
   border-radius: 100px;
   letter-spacing: 0.01em;
   transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
