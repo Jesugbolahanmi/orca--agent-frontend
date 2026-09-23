@@ -1111,18 +1111,71 @@ dd {
   opacity: 0.4;
 }
 
-.landing-inner {
+.landing-split {
   position: relative;
   z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4rem;
+  max-width: 1100px;
+  width: 100%;
+  padding: 2rem 1.5rem;
+  animation: fadeInUp 0.6s ease both;
+}
+
+.landing-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 1.4rem;
-  padding: 2rem 1.5rem;
-  max-width: 600px;
-  width: 100%;
-  animation: fadeInUp 0.6s ease both;
+  flex: 1;
+  max-width: 540px;
+}
+
+/* Story */
+.landing-story {
+  flex: 1;
+  max-width: 500px;
+  text-align: left;
+  padding: 2rem;
+  background: rgba(20, 20, 18, 0.4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.landing-story .story-title {
+  color: var(--ink);
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin-bottom: 1.2rem;
+  background: linear-gradient(135deg, var(--ink), var(--quiet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.landing-story p {
+  color: var(--quiet);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+.landing-story p strong {
+  color: var(--aqua);
+  font-weight: 600;
+}
+.landing-story .story-kicker {
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+  color: var(--aqua);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* Logo */
@@ -1291,15 +1344,34 @@ dd {
 }
 .landing-caption strong { color: var(--aqua); font-weight: 600; }
 
+@media (max-width: 960px) {
+  .landing-split {
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1.5rem;
+    height: 100%;
+    overflow-y: auto;
+    justify-content: flex-start;
+  }
+  .landing-inner, .landing-story {
+    max-width: 100%;
+    width: 100%;
+  }
+  .landing-story {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+}
+
 @media (max-width: 640px) {
   .landing-features { grid-template-columns: 1fr; gap: 0.5rem; }
   .landing-title { font-size: clamp(2.4rem, 12vw, 3.5rem); }
-  .landing-inner { gap: 1.1rem; padding: 1.5rem 1.25rem; }
   .landing-badge { font-size: 0.68rem; padding: 0.28rem 0.75rem; }
   .landing-typewriter { font-size: 0.88rem; }
   .landing-feat { padding: 0.6rem 0.75rem; gap: 0.6rem; }
   .landing-actions { flex-direction: column; width: 100%; }
   .landing-enter { width: 100%; justify-content: center; }
+  .landing-story .story-title { font-size: 1.4rem; }
 }
 
 /* App Shell */
