@@ -282,7 +282,6 @@
           '<span class="choice-meta-item">Price <strong>' + fmtUsd(d.price) + '</strong></span>' +
           '<span class="choice-meta-item">MCap <strong>' + fmtUsd(d.mcap) + '</strong></span>' +
           '<span class="choice-meta-item">Holders <strong>' + fmtNum(d.holders) + '</strong></span>' +
-          '<span class="choice-meta-item">Launched <strong>' + dateTxt + '</strong></span>' +
           '<span class="choice-meta-item choice-mint">Mint <strong>' + shortMint(launch.mint) + '</strong></span>' +
         '</div>';
       btn.addEventListener('click', function() {

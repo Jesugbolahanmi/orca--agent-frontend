@@ -1375,8 +1375,8 @@ dd {
 /* ── Choice Card (Agent Ambiguity Resolution) ── */
 .choice-card-wrap {
   margin-top: 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px;
   display: flex;
@@ -1385,7 +1385,7 @@ dd {
 }
 .choice-card-header {
   font-size: 0.85rem;
-  color: var(--text-sec);
+  color: var(--quiet);
   margin: 0;
 }
 .choice-card-list {
@@ -1397,21 +1397,22 @@ dd {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: var(--surface-hov);
-  border: 1px solid var(--border);
+  background: var(--panel-hover);
+  border: 1px solid var(--line-soft);
   border-radius: 8px;
   padding: 10px;
   text-align: left;
   cursor: pointer;
   transition: all 0.2s;
+  color: var(--ink);
 }
 .choice-card-option:hover:not(:disabled) {
-  border-color: var(--accent);
-  background: var(--surface-light);
+  border-color: var(--aqua);
+  background: var(--line);
 }
 .choice-card-option.is-selected {
-  border-color: var(--accent);
-  background: rgba(142, 203, 197, 0.1);
+  border-color: var(--aqua);
+  background: var(--aqua-dim);
 }
 .choice-option-main {
   display: flex;
@@ -1419,8 +1420,8 @@ dd {
   gap: 10px;
 }
 .choice-option-badge {
-  background: var(--surface-light);
-  color: var(--text-sec);
+  background: var(--line);
+  color: var(--quiet);
   font-size: 0.75rem;
   font-weight: 700;
   width: 20px;
@@ -1431,8 +1432,8 @@ dd {
   border-radius: 4px;
 }
 .choice-card-option:hover:not(:disabled) .choice-option-badge {
-  background: var(--accent);
-  color: var(--bg);
+  background: var(--aqua);
+  color: var(--paper);
 }
 .choice-option-info {
   display: flex;
@@ -1441,11 +1442,11 @@ dd {
 }
 .choice-option-name {
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
   font-size: 0.95rem;
 }
 .choice-option-sym {
-  color: var(--accent);
+  color: var(--aqua);
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -1454,11 +1455,11 @@ dd {
   flex-wrap: wrap;
   gap: 8px 12px;
   font-size: 0.75rem;
-  color: var(--text-sec);
+  color: var(--quiet);
   padding-left: 30px;
 }
 .choice-meta-item strong {
-  color: var(--text);
+  color: var(--ink);
   margin-left: 4px;
 }
 .choice-mint {
@@ -1466,15 +1467,15 @@ dd {
 }
 .choice-card-more {
   font-size: 0.75rem;
-  color: var(--text-sec);
+  color: var(--quiet);
   text-align: center;
   margin: 4px 0 0;
   font-style: italic;
 }
 .choice-card-none {
   background: transparent;
-  border: 1px dashed var(--border);
-  color: var(--text-sec);
+  border: 1px dashed var(--line);
+  color: var(--quiet);
   border-radius: 6px;
   padding: 8px;
   font-size: 0.8rem;
@@ -1482,8 +1483,8 @@ dd {
   transition: all 0.2s;
 }
 .choice-card-none:hover:not(:disabled) {
-  color: var(--text);
-  border-color: var(--text-sec);
+  color: var(--ink);
+  border-color: var(--quiet);
 }
 .choice-card-wrap.is-locked button:not(.is-selected) {
   opacity: 0.5;
