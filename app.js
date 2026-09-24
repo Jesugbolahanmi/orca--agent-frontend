@@ -879,27 +879,9 @@
     feed.scrollTop = feed.scrollHeight;
   }
 
-  const savedWallet = localStorage.getItem('orca_wallet');
-  if (savedWallet) {
-    walletAddr = savedWallet;
-    onWalletConnected();
-  }
+  // Wallet state is NOT auto-restored — user always picks their wallet manually.
 
-  // Auto-reconnect if wallet is already trusted
-  (function autoReconnect() {
-    const savedName = localStorage.getItem('orca_wallet_name');
-    const wallets = detectWallets();
-    const preferred = wallets.find(w => w.name === savedName) || wallets[0];
-    if (!preferred) return;
-    preferred.provider.connect({ onlyIfTrusted: true }).then(resp => {
-      const key = resp?.publicKey?.toString();
-      if (!key) return;
-      activeProvider = preferred.provider;
-      walletAddr = key;
-      localStorage.setItem('orca_wallet', walletAddr);
-      onWalletConnected();
-    }).catch(() => {});
-  })();
+
 
   // Restore active tab (skip 'home' — that's the landing overlay, not a real panel)
   const activeTab = localStorage.getItem('orca_tab');
