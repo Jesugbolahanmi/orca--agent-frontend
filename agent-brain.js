@@ -86,9 +86,9 @@
 
     if (/\b(market overview|market status|how.?s the market|overall market|general market)\b/.test(q))
       return { intent:'market_overview', entities:{}, confidence:'high' };
-    if (/\b(top gainer|best performer|biggest winner|most gains|most pumped|highest gain)\b/.test(q))
+    if (/\b(top gainers?|best performers?|biggest winners?|most gains?|most pumped|highest gains?)\b/.test(q))
       return { intent:'top_gainers', entities:{}, confidence:'high' };
-    if (/\b(top loser|biggest loss|most down|worst performer|dumped)\b/.test(q))
+    if (/\b(top losers?|biggest loss|most down|worst performers?|dumped)\b/.test(q))
       return { intent:'top_losers', entities:{}, confidence:'high' };
     if (/\b(highest volume|most volume|most traded|most active|top volume)\b/.test(q))
       return { intent:'highest_volume', entities:{}, confidence:'high' };
