@@ -520,26 +520,82 @@
     }
   }
 
-  // ── Wallet ────────────────────────────────────────────────────────────────
-  async function connectWallet() {
-    const phantom = window.solana;
-    if (!phantom?.isPhantom) {
-      window.open('https://phantom.app/', '_blank');
-      return;
+  // ── Wallet (universal Solana multi-wallet) ────────────────────────────────
+  let activeProvider = null;
+
+  function detectWallets() {
+    const wallets = [];
+    if (window.phantom?.solana) wallets.push({ name: 'Phantom', icon: '👻', provider: window.phantom.solana });
+    else if (window.solana?.isPhantom) wallets.push({ name: 'Phantom', icon: '👻', provider: window.solana });
+    if (window.solflare?.isSolflare) wallets.push({ name: 'Solflare', icon: '🌟', provider: window.solflare });
+    if (window.backpack?.isBackpack) wallets.push({ name: 'Backpack', icon: '🎒', provider: window.backpack });
+    if (window.coinbaseSolana) wallets.push({ name: 'Coinbase Wallet', icon: '🔵', provider: window.coinbaseSolana });
+    if (window.braveSolana) wallets.push({ name: 'Brave Wallet', icon: '🦁', provider: window.braveSolana });
+    if (window.glow) wallets.push({ name: 'Glow', icon: '✨', provider: window.glow });
+    if (window.solana && !wallets.find(w => w.provider === window.solana)) {
+      wallets.push({ name: 'Solana Wallet', icon: '◎', provider: window.solana });
     }
+    return wallets;
+  }
+
+  async function connectWithProvider(wallet) {
     try {
-      const resp = await phantom.connect();
-      walletAddr = resp.publicKey.toString();
+      const resp = await wallet.provider.connect();
+      const key = resp?.publicKey?.toString();
+      if (!key) throw new Error('No public key returned');
+      activeProvider = wallet.provider;
+      walletAddr = key;
+      localStorage.setItem('orca_wallet', walletAddr);
+      localStorage.setItem('orca_wallet_name', wallet.name);
       onWalletConnected();
     } catch (err) {
       console.error('Wallet connect failed:', err);
     }
   }
 
+  function showWalletModal(wallets) {
+    let modal = $('walletPickerModal');
+    if (modal) modal.remove();
+    modal = document.createElement('div');
+    modal.id = 'walletPickerModal';
+    modal.innerHTML = `
+      <div class="wallet-modal-backdrop"></div>
+      <div class="wallet-modal-box" role="dialog" aria-modal="true" aria-label="Select a wallet">
+        <div class="wallet-modal-head">
+          <p class="wallet-modal-title">Connect Wallet</p>
+          <button class="wallet-modal-close" aria-label="Close">&times;</button>
+        </div>
+        <p class="wallet-modal-sub">Choose your Solana wallet to continue.</p>
+        <div class="wallet-modal-list">
+          ${wallets.map((w, i) => `<button class="wallet-modal-option" data-idx="${i}">${w.icon} ${w.name}</button>`).join('')}
+        </div>
+        <button class="wallet-modal-install">No wallet? Get Phantom &rarr;</button>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector('.wallet-modal-backdrop').addEventListener('click', () => modal.remove());
+    modal.querySelector('.wallet-modal-close').addEventListener('click', () => modal.remove());
+    modal.querySelector('.wallet-modal-install').addEventListener('click', () => { window.open('https://phantom.app/', '_blank'); modal.remove(); });
+    modal.querySelectorAll('.wallet-modal-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        modal.remove();
+        connectWithProvider(wallets[+btn.dataset.idx]);
+      });
+    });
+  }
+
+  async function connectWallet() {
+    const wallets = detectWallets();
+    if (wallets.length === 0) { window.open('https://phantom.app/', '_blank'); return; }
+    if (wallets.length === 1) { await connectWithProvider(wallets[0]); }
+    else { showWalletModal(wallets); }
+  }
+
   function disconnectWallet() {
-    window.solana?.disconnect?.();
+    activeProvider?.disconnect?.();
     walletAddr = null;
+    activeProvider = null;
     localStorage.removeItem('orca_wallet');
+    localStorage.removeItem('orca_wallet_name');
     onWalletDisconnected();
   }
 
@@ -830,13 +886,20 @@
   }
 
   // Auto-reconnect if wallet is already trusted
-  if (window.solana?.isPhantom) {
-    window.solana.connect({ onlyIfTrusted: true }).then(resp => {
-      walletAddr = resp.publicKey.toString();
+  (function autoReconnect() {
+    const savedName = localStorage.getItem('orca_wallet_name');
+    const wallets = detectWallets();
+    const preferred = wallets.find(w => w.name === savedName) || wallets[0];
+    if (!preferred) return;
+    preferred.provider.connect({ onlyIfTrusted: true }).then(resp => {
+      const key = resp?.publicKey?.toString();
+      if (!key) return;
+      activeProvider = preferred.provider;
+      walletAddr = key;
       localStorage.setItem('orca_wallet', walletAddr);
       onWalletConnected();
     }).catch(() => {});
-  }
+  })();
 
   // Restore active tab (skip 'home' — that's the landing overlay, not a real panel)
   const activeTab = localStorage.getItem('orca_tab');

@@ -1372,6 +1372,97 @@ dd {
   flex-direction: column;
 }
 
+/* ── Wallet Picker Modal ── */
+#walletPickerModal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wallet-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(6px);
+}
+.wallet-modal-box {
+  position: relative;
+  z-index: 1;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px;
+  width: 340px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6), 0 0 0 1px var(--aqua-glow);
+  animation: modalIn .18s ease;
+}
+@keyframes modalIn {
+  from { opacity:0; transform: scale(.94) translateY(8px); }
+  to   { opacity:1; transform: scale(1)  translateY(0); }
+}
+.wallet-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.wallet-modal-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--ink);
+}
+.wallet-modal-close {
+  font-size: 1.3rem;
+  color: var(--quiet);
+  line-height: 1;
+  transition: color .15s;
+}
+.wallet-modal-close:hover { color: var(--ink); }
+.wallet-modal-sub {
+  font-size: 0.82rem;
+  color: var(--quiet);
+  margin-top: -8px;
+}
+.wallet-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wallet-modal-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel-hover);
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: left;
+  transition: all .18s;
+}
+.wallet-modal-option:hover {
+  border-color: var(--aqua);
+  background: var(--aqua-dim);
+  color: var(--ink);
+}
+.wallet-modal-install {
+  font-size: 0.8rem;
+  color: var(--quiet);
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color .15s;
+  margin-top: -4px;
+}
+.wallet-modal-install:hover { color: var(--aqua); }
+
 /* ── Choice Card (Agent Ambiguity Resolution) ── */
 .choice-card-wrap {
   margin-top: 12px;
