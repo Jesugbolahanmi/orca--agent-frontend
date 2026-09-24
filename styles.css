@@ -1462,6 +1462,29 @@ dd {
   margin-top: -4px;
 }
 .wallet-modal-install:hover { color: var(--aqua); }
+.wallet-modal-get {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--quiet);
+  flex-wrap: wrap;
+  padding-top: 4px;
+  border-top: 1px solid var(--line-soft);
+}
+.wallet-modal-get a {
+  color: var(--aqua);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity .15s;
+}
+.wallet-modal-get a:hover { opacity: .75; }
+.wallet-modal-none {
+  font-size: 0.85rem;
+  color: var(--quiet);
+  text-align: center;
+  padding: 8px 0;
+}
 
 /* ── Choice Card (Agent Ambiguity Resolution) ── */
 .choice-card-wrap {

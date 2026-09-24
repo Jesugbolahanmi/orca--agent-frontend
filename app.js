@@ -558,6 +558,11 @@
     if (modal) modal.remove();
     modal = document.createElement('div');
     modal.id = 'walletPickerModal';
+
+    const walletListHTML = wallets.length > 0
+      ? wallets.map((w, i) => `<button class="wallet-modal-option" data-idx="${i}">${w.icon} ${w.name}</button>`).join('')
+      : `<p class="wallet-modal-none">No Solana wallet detected in this browser.</p>`;
+
     modal.innerHTML = `
       <div class="wallet-modal-backdrop"></div>
       <div class="wallet-modal-box" role="dialog" aria-modal="true" aria-label="Select a wallet">
@@ -567,14 +572,18 @@
         </div>
         <p class="wallet-modal-sub">Choose your Solana wallet to continue.</p>
         <div class="wallet-modal-list">
-          ${wallets.map((w, i) => `<button class="wallet-modal-option" data-idx="${i}">${w.icon} ${w.name}</button>`).join('')}
+          ${walletListHTML}
         </div>
-        <button class="wallet-modal-install">No wallet? Get Phantom &rarr;</button>
+        <div class="wallet-modal-get">
+          <span>Get a wallet:</span>
+          <a href="https://phantom.app/" target="_blank" rel="noopener">Phantom</a>
+          <a href="https://solflare.com/" target="_blank" rel="noopener">Solflare</a>
+          <a href="https://www.backpack.app/" target="_blank" rel="noopener">Backpack</a>
+        </div>
       </div>`;
     document.body.appendChild(modal);
     modal.querySelector('.wallet-modal-backdrop').addEventListener('click', () => modal.remove());
     modal.querySelector('.wallet-modal-close').addEventListener('click', () => modal.remove());
-    modal.querySelector('.wallet-modal-install').addEventListener('click', () => { window.open('https://phantom.app/', '_blank'); modal.remove(); });
     modal.querySelectorAll('.wallet-modal-option').forEach(btn => {
       btn.addEventListener('click', () => {
         modal.remove();
@@ -585,9 +594,8 @@
 
   async function connectWallet() {
     const wallets = detectWallets();
-    if (wallets.length === 0) { window.open('https://phantom.app/', '_blank'); return; }
-    if (wallets.length === 1) { await connectWithProvider(wallets[0]); }
-    else { showWalletModal(wallets); }
+    // Always show the modal — never silently assume which wallet to use
+    showWalletModal(wallets);
   }
 
   function disconnectWallet() {
