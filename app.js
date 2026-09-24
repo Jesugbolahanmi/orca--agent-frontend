@@ -770,10 +770,10 @@
 
     // ── Greetings & chitchat ───────────────────────────────────────────────
     if (/^(hi|hey|hello|sup|yo|gm|good morning|hiya|what'?s up|howdy)\b/.test(q)) {
-      return { text: `Hey! 👋 I'm ORCAGENT — your AI market reader for the AQUA Launchpad. I'm watching ${allLaunches.length} tokens in real time. Ask me about any token, get prices, market analysis, or just say "buy [token]" to swap!`, link: null };
+      return { text: `Hey! 👋 I'm ORCAGENT - your AI market reader for the AQUA Launchpad. I'm watching ${allLaunches.length} tokens in real time. Ask me about any token, get prices, market analysis, or just say "buy [token]" to swap!`, link: null };
     }
     if (/\b(who are you|what are you|what is orcagent|tell me about yourself)\b/.test(q)) {
-      return { text: `I'm ORCAGENT 🐋 — an on-chain AI agent built specifically for the AQUA Launchpad on Solana. I can give you live prices, market caps, volume, holder counts, and market sentiment for every token. You can also swap tokens directly through me using any Solana wallet.`, link: null };
+      return { text: `I'm ORCAGENT 🐋 - an on-chain AI agent built specifically for the AQUA Launchpad on Solana. I can give you live prices, market caps, volume, holder counts, and market sentiment for every token. You can also swap tokens directly through me using any Solana wallet.`, link: null };
     }
     if (/\b(thank|thanks|thx|ty|appreciate)\b/.test(q)) {
       return { text: `Anytime! 🐋 That's what I'm here for. Anything else you want to know about the market?`, link: null };
@@ -856,8 +856,8 @@
       const name = (l.name   || '').toLowerCase();
       const mint = (l.mint   || '').toLowerCase();
       
-      const hasSymMatch  = sym.length > 1 && q.includes(sym);
-      const hasNameMatch = name.length > 2 && q.includes(name);
+      const hasSymMatch  = sym.length > 0 && new RegExp('\\b' + sym + '\\b', 'i').test(q);
+      const hasNameMatch = name.length > 0 && new RegExp('\\b' + name + '\\b', 'i').test(q);
       const hasMintMatch = mint.length > 10 && q.includes(mint);
 
       if (hasSymMatch || hasNameMatch || hasMintMatch) {
@@ -875,22 +875,22 @@
 
           let outlook = '';
           if (d.mcap && d.mcap < 500_000) {
-            outlook = `With a market cap of ${dollars(d.mcap)}, ${symbol} is in its very early stages — offering maximum upside potential as adoption grows.`;
+            outlook = `With a market cap of ${dollars(d.mcap)}, ${symbol} is in its very early stages - offering maximum upside potential as adoption grows.`;
           } else if (d.mcap && d.mcap < 2_000_000) {
             outlook = `At ${dollars(d.mcap)} market cap, ${symbol} is still in its early growth phase. There's real room to move if volume stays strong.`;
           } else if (d.mcap && d.mcap < 10_000_000) {
-            outlook = `${symbol} is building momentum with a ${mcapM}M market cap. Solid footing — continued growth depends on community and launchpad activity.`;
+            outlook = `${symbol} is building momentum with a ${mcapM}M market cap. Solid footing - continued growth depends on community and launchpad activity.`;
           } else {
             outlook = `${symbol} has established itself with a sizeable market cap of ${dollars(d.mcap)}. For further big moves, it needs consistent volume and new buyers.`;
           }
 
           let volNote = '';
           if (volRatio && volRatio > 0.5) {
-            volNote = ` Volume-to-cap ratio is strong (${(volRatio * 100).toFixed(0)}%) — that's a healthy sign of active trading.`;
+            volNote = ` Volume-to-cap ratio is strong (${(volRatio * 100).toFixed(0)}%) - that's a healthy sign of active trading.`;
           } else if (volRatio && volRatio > 0.1) {
             volNote = ` Volume is moderate relative to market cap.`;
           } else if (volRatio) {
-            volNote = ` Volume is currently low relative to its market cap — watch for a volume spike.`;
+            volNote = ` Volume is currently low relative to its market cap - watch for a volume spike.`;
           }
 
           const disclaimer = `\n\n💡 This is on-chain market data. Always do your own research.`;
@@ -958,7 +958,7 @@
       const losers  = allLaunches.filter(l => (getLaunchData(l).change || 0) < 0).length;
       const totalVol = allLaunches.reduce((acc, l) => acc + (getLaunchData(l).vol || 0), 0);
       const sentiment = gainers > losers ? 'Bullish' : gainers < losers ? 'Bearish' : 'Mixed';
-      return { text: `AQUA Launchpad Market Overview:\n${sentiment} — ${gainers} tokens up, ${losers} down\nTotal 24h Volume: ${dollars(totalVol)}\nTokens tracked: ${allLaunches.length}`, link: null };
+      return { text: `AQUA Launchpad Market Overview:\n${sentiment} - ${gainers} tokens up, ${losers} down\nTotal 24h Volume: ${dollars(totalVol)}\nTokens tracked: ${allLaunches.length}`, link: null };
     }
     if (/\b(most holders?|largest community|most popular by holders?)\b/.test(q)) {
       const top = [...allLaunches].sort((a,b) => (getLaunchData(b).holders||0) - (getLaunchData(a).holders||0))[0];
@@ -970,7 +970,7 @@
     }
 
     if (/^help$|what can you do|what do you know|commands/.test(q)) {
-      return { text: `I can help you with:\n• "price of [token]" — live price\n• "[token] analysis" — full breakdown\n• "is [token] going to moon?" — honest outlook\n• top gainers / top losers\n• highest volume / largest market cap\n• market overview / market status\n• "buy [token]" — swap via Jupiter\n• most holders / newest launch`, link: null };
+      return { text: `I can help you with:\n• "price of [token]" - live price\n• "[token] analysis" - full breakdown\n• "is [token] going to moon?" - honest outlook\n• top gainers / top losers\n• highest volume / largest market cap\n• market overview / market status\n• "buy [token]" - swap via Jupiter\n• most holders / newest launch`, link: null };
     }
 
     // ── General AQUA Launchpad questions ──────────────────────────────────
@@ -978,7 +978,7 @@
       return { text: `AQUA Launchpad is a Solana-based token launchpad built on top of Orca's concentrated liquidity AMM (CLMM). It lets anyone create and launch tokens with deep on-chain liquidity from day one. Unlike typical bonding-curve launchpads, AQUA tokens graduate into real Orca liquidity pools.`, link: null };
     }
     if (/\b(solana|sol network|what chain|blockchain)\b/.test(q)) {
-      return { text: `AQUA Launchpad runs on Solana — one of the fastest blockchains in the world with near-instant transactions and very low fees. All tokens here are Solana SPL tokens tradeable with any Solana wallet.`, link: null };
+      return { text: `AQUA Launchpad runs on Solana - one of the fastest blockchains in the world with near-instant transactions and very low fees. All tokens here are Solana SPL tokens tradeable with any Solana wallet.`, link: null };
     }
 
     // ── Fallback ──────────────────────────────────────────────────────────
