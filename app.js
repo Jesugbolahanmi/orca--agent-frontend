@@ -793,7 +793,7 @@
     }
 
     // ── Buy intent — supports: "buy aqua", "buy $aqua", "buy 0.5 sol of aqua" ──
-    const buyMatch = q.match(/^buy\s+(?:(\d+\.?\d*)\s+sol\s+(?:of\s+)?)?\$?(.+)/);
+    const buyMatch = q.match(/^buy\s+(?:([\d.]+)\s+sol\s+(?:of\s+)?)?\$?(.+)/);
     if (buyMatch) {
       const amountStr = buyMatch[1];
       const target    = buyMatch[2].trim();
@@ -812,7 +812,7 @@
     }
 
     // ── Sell intent — supports: "sell aqua", "sell 100 aqua" ──
-    const sellMatch = q.match(/^sell\s+(?:(\d+\.?\d*)\s+)?\$?(.+)/);
+    const sellMatch = q.match(/^sell\s+(?:([\d.]+)\s+)?\$?(.+)/);
     if (sellMatch) {
       const amountStr = sellMatch[1];
       const target    = sellMatch[2].trim();
@@ -830,12 +830,18 @@
       return { text: `I couldn't find "${target}" on the AQUA Launchpad. Check the spelling or browse the Market tab.`, link: null };
     }
 
-    // ── Price intent — "price of aqua", "what is aqua price", "aqua price" ──
-    const priceMatch = q.match(/(?:price\s+of\s+|what(?:'?s|\s+is)\s+(?:the\s+)?(?:price\s+of\s+)?|how much is\s+)?\$?([a-z0-9]+)(?:'?s|\s+price|\s+worth|\s+cost|\s+trading)?$/);
+    // ── Price intent (declared here, evaluated AFTER the token loop below) ──
+    // Prevents "will aqua go to millions?" being caught as a price lookup.
+    const priceIntentMatch =
+      q.match(/\bprice\s+of\s+([a-z0-9]+)\b/i) ||
+      q.match(/\bwhat(?:'s|\s+is)\s+(?:the\s+)?price\s+of\s+([a-z0-9]+)\b/i) ||
+      q.match(/\bhow\s+much\s+(?:is|does)\s+([a-z0-9]+)\s+(?:cost|worth)\b/i) ||
+      q.match(/\b([a-z0-9]+)\s+price\b/i);
 
     // ── Moon/Prediction intent ─────────────────────────────────────────────
     const predictionKeywords = /\b(moon|go up|pump|hit|reach|get to|make it|millions?|billion|prediction|predict|gonna|going to|will it|potential|x from|×|10x|100x|1000x|future|outlook|target|price target|when|ath|all[- ]time high)\b/;
     const sentimentKeywords  = /\b(good|bad|worth it|worth buying|undervalued|overvalued|bull|bear|bullish|bearish|gem|safe|risky|rug|legit|scam|hold|bag|accumulate|dip|buy the dip)\b/;
+
 
     // Check if question is about a specific token with prediction/sentiment
     // Sort launches by length descending to prevent greedy matching (e.g. "AQUA" overriding "AQUACAT")
@@ -899,6 +905,27 @@
         const chg  = d.change;
         const text = `${l.name} (${symbol})\nPrice: ${dollars(d.price)}\n24h Change: ${chg !== null ? (chg>=0?'+':'') + chg.toFixed(2)+'%' : 'n/a'}\nMkt Cap: ${dollars(d.mcap)}\n24h Volume: ${dollars(d.vol)}\nHolders: ${d.holders ? Number(d.holders).toLocaleString() : 'n/a'}\nTVL: ${dollars(d.tvl)}`;
         return { text, link: makeBuyLink(l) };
+      }
+    }
+
+    // ── Price lookup (checked AFTER token loop so predictions go first) ──────
+    const priceNoiseWords = ['buy','sell','top','my','show','list','set','alert','the',
+                             'what','how','much','does','cost','worth','will','go','is','a',
+                             'million','billion','moon','pump','dump','it','that'];
+    if (priceIntentMatch) {
+      const sym = (priceIntentMatch[1] || '').toLowerCase();
+      if (!priceNoiseWords.includes(sym)) {
+        const launch = findToken(sym);
+        if (launch) {
+          const d = getLaunchData(launch);
+          const symbol = (launch.symbol || '').toUpperCase();
+          const chg = d.change;
+          return {
+            text: `${launch.name} (${symbol})\nPrice: ${dollars(d.price)}\n24h Change: ${chg !== null ? (chg>=0?'+':'') + chg.toFixed(2)+'%' : 'n/a'}\nMkt Cap: ${dollars(d.mcap)}\n24h Volume: ${dollars(d.vol)}`,
+            link: makeBuyLink(launch)
+          };
+        }
+        return { text: `I couldn't find "${sym.toUpperCase()}" on the AQUA Launchpad.`, link: null };
       }
     }
 
