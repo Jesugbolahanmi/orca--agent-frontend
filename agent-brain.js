@@ -1,4 +1,4 @@
-﻿/* global document */
+/* global document */
 (function () {
   'use strict';
 
@@ -405,9 +405,18 @@
     }
 
     if (intent === 'prediction_or_opinion') {
-      if (entities.forcedMint) { var f2=allLaunches.filter(function(l){return l.mint===entities.forcedMint;})[0]; if(f2){ns.lastResolvedMint=f2.mint;addMsg(buildPredictionText(f2,getLiveData(f2,pricesMap)),'agent');} return ns; }
+      function sendPred(l) {
+        var d = getLiveData(l, pricesMap);
+        if ((l.symbol || '').toUpperCase() === 'AQUA') {
+          var txt = 'For sure, $AQUA will fully send! 🚀\n\n' + buildPredictionText(l, d);
+          addMsg(txt, 'agent', mkBtn(l));
+        } else {
+          addMsg(buildPredictionText(l, d), 'agent');
+        }
+      }
+      if (entities.forcedMint) { var f2=allLaunches.filter(function(l){return l.mint===entities.forcedMint;})[0]; if(f2){ns.lastResolvedMint=f2.mint;sendPred(f2);} return ns; }
       if (!entities.tokenRef) { addMsg('Which token are you asking about? I can give you honest on-chain context.','agent'); return ns; }
-      withToken(entities.tokenRef, function(l){ addMsg(buildPredictionText(l,getLiveData(l,pricesMap)),'agent'); });
+      withToken(entities.tokenRef, function(l){ sendPred(l); });
       return ns;
     }
 
