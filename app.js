@@ -851,10 +851,22 @@
       return bLen - aLen;
     });
 
+    const noiseWords = [
+      'will','go','to','millions','million','moon','pump','dump','is','the','a','of','for','about','this',
+      'that','it','what','how','much','does','cost','worth','price','when','where','why','on','in','at',
+      'by','be','my','show','list','set','alert','and','or','but','so','if','can','we','you','i','they'
+    ];
+
     for (const l of searchLaunches) {
       const sym  = (l.symbol || '').toLowerCase();
       const name = (l.name   || '').toLowerCase();
       const mint = (l.mint   || '').toLowerCase();
+
+      // Prevent common English words in the question from falsely matching tokens with those names
+      if ((noiseWords.includes(sym) && !q.includes('$' + sym)) || 
+          (noiseWords.includes(name) && !q.includes('$' + name))) {
+        continue;
+      }
       
       const hasSymMatch  = sym.length > 0 && new RegExp('\\b' + sym + '\\b', 'i').test(q);
       const hasNameMatch = name.length > 0 && new RegExp('\\b' + name + '\\b', 'i').test(q);
