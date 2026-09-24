@@ -29,6 +29,13 @@
   let currentMarketList = [];
   let marketPage = 1;
 
+  // Conversation state tracked by OrcaBrain
+  let agentState = {
+    lastResolvedMint: null,
+    pendingChoices:   null,
+    pendingIntent:    null,
+  };
+
   // ── Status ────────────────────────────────────────────────────────────────
   function setStatus(text, kind = '') {
     const el = $('marketState');
@@ -682,319 +689,69 @@
     return btn;
   }
 
-  function agentReply(prompt) {
-    const raw = prompt.trim();
-    const q   = raw.toLowerCase();
-
-    if (/\b(check again|again|do it again|retry|refresh)\b/.test(q)) {
-      if (lastPrompt) {
-        return agentReply(lastPrompt);
-      }
-      return { text: "I don't have a previous command to repeat.", link: null };
+  // ── Agent reply — uses OrcaBrain ──────────────────────────────────────────
+  function dispatchMessage(text) {
+    if (!window.OrcaBrain) {
+      addMessage('Agent brain is still loading. Please try again.', 'agent');
+      return;
     }
-    
-    // Save valid prompts for 'check again' logic (excluding conversational/flow stops)
-    if (!['cancel', 'stop', 'no', 'yes'].includes(q)) {
-      lastPrompt = raw;
+
+    const q = text.trim().toLowerCase();
+
+    // ── Handle pending buy amount ────────────────────────────────────────
+    if (pendingBuyTarget) {
+      if (q === 'cancel' || q === 'stop') {
+        pendingBuyTarget = null;
+        addMessage('Buy cancelled. What else can I help you with?', 'agent');
+        return;
+      }
+      const solAmt = parseFloat(q);
+      if (!isNaN(solAmt) && solAmt > 0) {
+        const launch = pendingBuyTarget;
+        pendingBuyTarget = null;
+        addMessage('Getting a quote for ' + solAmt + ' SOL → ' + (launch.symbol || '').toUpperCase() + '…', 'agent');
+        setTimeout(() => triggerBuyFlow(launch, solAmt), 300);
+        return;
+      }
+      addMessage('Please enter a valid SOL amount (e.g. 0.1), or type "cancel".', 'agent');
+      return;
+    }
+
+    // ── Handle pending sell amount ───────────────────────────────────────
+    if (pendingSellTarget) {
+      if (q === 'cancel' || q === 'stop') {
+        pendingSellTarget = null;
+        addMessage('Sell cancelled. What else can I help you with?', 'agent');
+        return;
+      }
+      const tokAmt = parseFloat(q);
+      if (!isNaN(tokAmt) && tokAmt > 0) {
+        const launch = pendingSellTarget;
+        pendingSellTarget = null;
+        addMessage('Getting a quote for ' + tokAmt + ' ' + (launch.symbol || '').toUpperCase() + ' → SOL…', 'agent');
+        setTimeout(() => triggerSellFlow(launch, tokAmt), 300);
+        return;
+      }
+      addMessage('Please enter a valid token amount (e.g. 1000), or type "cancel".', 'agent');
+      return;
     }
 
     if (!allLaunches.length) {
-      return { text: 'Market data is still loading. Please try again in a moment.', link: null };
+      addMessage('Market data is still loading. Please try again in a moment.', 'agent');
+      return;
     }
 
-    // ── Pending buy amount ──────────────────────────────────────────────────
-    if (pendingBuyTarget) {
-      const solAmount = parseFloat(q);
-      if (q === 'cancel' || q === 'stop') {
-        pendingBuyTarget = null;
-        return { text: 'Buy cancelled. What else can I help you with?', link: null };
-      }
-      if (!isNaN(solAmount) && solAmount > 0) {
-        const launch = pendingBuyTarget;
-        pendingBuyTarget = null;
-        setTimeout(() => triggerBuyFlow(launch, solAmount), 300);
-        return { text: `Getting a quote for ${solAmount} SOL → ${(launch.symbol || '').toUpperCase()}…`, link: null };
-      } else {
-        return { text: 'Please enter a valid amount in SOL (e.g., 0.1), or type "cancel".', link: null };
-      }
-    }
-
-    // ── Pending sell amount ──────────────────────────────────────────────────
-    if (pendingSellTarget) {
-      const tokenAmount = parseFloat(q);
-      if (q === 'cancel' || q === 'stop') {
-        pendingSellTarget = null;
-        return { text: 'Sell cancelled. What else can I help you with?', link: null };
-      }
-      if (!isNaN(tokenAmount) && tokenAmount > 0) {
-        const launch = pendingSellTarget;
-        pendingSellTarget = null;
-        setTimeout(() => triggerSellFlow(launch, tokenAmount), 300);
-        return { text: `Getting a quote for ${tokenAmount} ${(launch.symbol || '').toUpperCase()} → SOL…`, link: null };
-      } else {
-        return { text: 'Please enter a valid amount of tokens to sell, or type "cancel".', link: null };
-      }
-    }
-
-    // ── Helper: get live data for a token ──────────────────────────────────
-    function getLaunchData(l) {
-      const m = pricesMap.get(l.id) || null;
-      return {
-        price:   num(val(m, l, 'priceUsd')),
-        mcap:    num(val(m, l, 'marketCapUsd')),
-        vol:     num(val(m, l, 'volume24hUsd')),
-        change:  num(val(m, l, 'change24h')),
-        holders: num(val(m, l, 'holderCount')),
-        tvl:     num(val(m, l, 'tvlUsd')),
-      };
-    }
-
-    // ── Helper: find a token by name/symbol/CA in query ───────────────────────
-    function findToken(query) {
-      const q = query.toLowerCase().trim();
-      
-      // 1. Exact match (Mint/CA, Symbol, or Name)
-      let match = allLaunches.find(l =>
-        (l.mint   || '').toLowerCase() === q ||
-        (l.symbol || '').toLowerCase() === q ||
-        (l.name   || '').toLowerCase() === q
-      );
-      if (match) return match;
-      
-      // 2. Partial match (Name or Symbol includes the query)
-      return allLaunches.find(l =>
-        (l.name   || '').toLowerCase().includes(q) ||
-        (l.symbol || '').toLowerCase().includes(q)
-      ) || null;
-    }
-
-    // ── Greetings & chitchat ───────────────────────────────────────────────
-    if (/^(hi|hey|hello|sup|yo|gm|good morning|hiya|what'?s up|howdy)\b/.test(q)) {
-      return { text: `Hey! 👋 I'm ORCAGENT - your AI market reader for the AQUA Launchpad. I'm watching ${allLaunches.length} tokens in real time. Ask me about any token, get prices, market analysis, or just say "buy [token]" to swap!`, link: null };
-    }
-    if (/\b(who are you|what are you|what is orcagent|tell me about yourself)\b/.test(q)) {
-      return { text: `I'm ORCAGENT 🐋 - an on-chain AI agent built specifically for the AQUA Launchpad on Solana. I can give you live prices, market caps, volume, holder counts, and market sentiment for every token. You can also swap tokens directly through me using any Solana wallet.`, link: null };
-    }
-    if (/\b(thank|thanks|thx|ty|appreciate)\b/.test(q)) {
-      return { text: `Anytime! 🐋 That's what I'm here for. Anything else you want to know about the market?`, link: null };
-    }
-    if (/\b(good|nice|great|awesome|cool|love it|love this|amazing)\b/.test(q) && q.length < 30) {
-      return { text: `Glad to help! 🚀 The AQUA Launchpad is moving fast — stay sharp. Anything else?`, link: null };
-    }
-
-    // ── Balance intent — "how many aqua am i holding", "what is my sol balance" ──
-    const balMatch = q.match(/^(?:how\s+many|how\s+much|what\s+(?:is|are)\s+my|show\s+my)\s+\$?(?:of\s+)?([a-z0-9]+)\s*(?:am\s+i\s+holding|do\s+i\s+have|do\s+i\s+hold|balance|tokens?)?\b/i) 
-                  || q.match(/^([a-z0-9]+)\s+balance\b/i);
-    if (balMatch) {
-      const targetStr = (balMatch[1] || balMatch[2]).trim();
-      const launch = findToken(targetStr);
-      setTimeout(() => triggerBalanceFlow(launch, targetStr), 300);
-      return { text: `Checking your wallet balance for ${launch ? (launch.symbol || '').toUpperCase() : targetStr.toUpperCase()}...`, link: null };
-    }
-
-    // ── Buy intent — supports: "buy aqua", "buy $aqua", "buy 0.5 sol of aqua" ──
-    const buyMatch = q.match(/^buy\s+(?:([\d.]+)\s+sol\s+(?:of\s+)?)?\$?(.+)/);
-    if (buyMatch) {
-      const amountStr = buyMatch[1];
-      const target    = buyMatch[2].trim();
-      const launch    = findToken(target);
-      if (launch) {
-        if (amountStr) {
-          const solAmount = parseFloat(amountStr);
-          setTimeout(() => triggerBuyFlow(launch, solAmount), 300);
-          return { text: `Getting a quote for ${solAmount} SOL → ${(launch.symbol || '').toUpperCase()}…`, link: null };
-        } else {
-          pendingBuyTarget = launch;
-          return { text: `How much SOL worth of ${(launch.symbol || '').toUpperCase()} would you like to buy? (e.g., 0.1)\nType "cancel" to abort.`, link: null };
-        }
-      }
-      return { text: `I couldn't find "${target}" on the AQUA Launchpad. Check the spelling or browse the Market tab.`, link: null };
-    }
-
-    // ── Sell intent — supports: "sell aqua", "sell 100 aqua" ──
-    const sellMatch = q.match(/^sell\s+(?:([\d.]+)\s+)?\$?(.+)/);
-    if (sellMatch) {
-      const amountStr = sellMatch[1];
-      const target    = sellMatch[2].trim();
-      const launch    = findToken(target);
-      if (launch) {
-        if (amountStr) {
-          const tokenAmount = parseFloat(amountStr);
-          setTimeout(() => triggerSellFlow(launch, tokenAmount), 300);
-          return { text: `Getting a quote for ${tokenAmount} ${(launch.symbol || '').toUpperCase()} → SOL…`, link: null };
-        } else {
-          pendingSellTarget = launch;
-          return { text: `How many ${(launch.symbol || '').toUpperCase()} tokens would you like to sell? (e.g., 1000)\nType "cancel" to abort.`, link: null };
-        }
-      }
-      return { text: `I couldn't find "${target}" on the AQUA Launchpad. Check the spelling or browse the Market tab.`, link: null };
-    }
-
-    // ── Price intent (declared here, evaluated AFTER the token loop below) ──
-    // Prevents "will aqua go to millions?" being caught as a price lookup.
-    const priceIntentMatch =
-      q.match(/\bprice\s+of\s+([a-z0-9]+)\b/i) ||
-      q.match(/\bwhat(?:'s|\s+is)\s+(?:the\s+)?price\s+of\s+([a-z0-9]+)\b/i) ||
-      q.match(/\bhow\s+much\s+(?:is|does)\s+([a-z0-9]+)\s+(?:cost|worth)\b/i) ||
-      q.match(/\b([a-z0-9]+)\s+price\b/i);
-
-    // ── Moon/Prediction intent ─────────────────────────────────────────────
-    const predictionKeywords = /\b(moon|go up|pump|hit|reach|get to|make it|millions?|billion|prediction|predict|gonna|going to|will it|potential|x from|×|10x|100x|1000x|future|outlook|target|price target|when|ath|all[- ]time high)\b/;
-    const sentimentKeywords  = /\b(good|bad|worth it|worth buying|undervalued|overvalued|bull|bear|bullish|bearish|gem|safe|risky|rug|legit|scam|hold|bag|accumulate|dip|buy the dip)\b/;
-
-
-    // Check if question is about a specific token with prediction/sentiment
-    // Sort launches by length descending to prevent greedy matching (e.g. "AQUA" overriding "AQUACAT")
-    const searchLaunches = [...allLaunches].sort((a, b) => {
-      const aLen = Math.max((a.name || '').length, (a.symbol || '').length);
-      const bLen = Math.max((b.name || '').length, (b.symbol || '').length);
-      return bLen - aLen;
+    const classified = OrcaBrain.classifyIntent(text, agentState);
+    const newState   = OrcaBrain.handleIntent(classified, agentState, allLaunches, pricesMap, {
+      addMessage,
+      makeBuyButton: makeBuyLink,
+      triggerBuyFlow,
+      triggerSellFlow,
+      triggerBalanceFlow,
+      setPendingBuy:  (l) => { pendingBuyTarget = l; },
+      setPendingSell: (l) => { pendingSellTarget = l; },
     });
-
-    const noiseWords = [
-      'will','go','to','millions','million','moon','pump','dump','is','the','a','of','for','about','this',
-      'that','it','what','how','much','does','cost','worth','price','when','where','why','on','in','at',
-      'by','be','my','show','list','set','alert','and','or','but','so','if','can','we','you','i','they'
-    ];
-
-    for (const l of searchLaunches) {
-      const sym  = (l.symbol || '').toLowerCase();
-      const name = (l.name   || '').toLowerCase();
-      const mint = (l.mint   || '').toLowerCase();
-
-      // Prevent common English words in the question from falsely matching tokens with those names
-      if ((noiseWords.includes(sym) && !q.includes('$' + sym)) || 
-          (noiseWords.includes(name) && !q.includes('$' + name))) {
-        continue;
-      }
-      
-      const hasSymMatch  = sym.length > 0 && new RegExp('\\b' + sym + '\\b', 'i').test(q);
-      const hasNameMatch = name.length > 0 && new RegExp('\\b' + name + '\\b', 'i').test(q);
-      const hasMintMatch = mint.length > 10 && q.includes(mint);
-
-      if (hasSymMatch || hasNameMatch || hasMintMatch) {
-        const d = getLaunchData(l);
-        const symbol = (l.symbol || '').toUpperCase();
-        const isMoon  = predictionKeywords.test(q);
-        const isSenti = sentimentKeywords.test(q);
-
-        if (isMoon || isSenti) {
-          // Build honest bullish analysis
-          const mcapM   = d.mcap ? (d.mcap / 1e6).toFixed(2) : null;
-          const volRatio = (d.vol && d.mcap) ? (d.vol / d.mcap) : null;
-          const chgTxt   = d.change !== null ? ((d.change >= 0 ? '+' : '') + d.change.toFixed(2) + '% in 24h') : 'price change not available';
-          const holders  = d.holders ? Number(d.holders).toLocaleString() : 'unknown number of';
-
-          let outlook = '';
-          if (d.mcap && d.mcap < 500_000) {
-            outlook = `With a market cap of ${dollars(d.mcap)}, ${symbol} is in its very early stages - offering maximum upside potential as adoption grows.`;
-          } else if (d.mcap && d.mcap < 2_000_000) {
-            outlook = `At ${dollars(d.mcap)} market cap, ${symbol} is still in its early growth phase. There's real room to move if volume stays strong.`;
-          } else if (d.mcap && d.mcap < 10_000_000) {
-            outlook = `${symbol} is building momentum with a ${mcapM}M market cap. Solid footing - continued growth depends on community and launchpad activity.`;
-          } else {
-            outlook = `${symbol} has established itself with a sizeable market cap of ${dollars(d.mcap)}. For further big moves, it needs consistent volume and new buyers.`;
-          }
-
-          let volNote = '';
-          if (volRatio && volRatio > 0.5) {
-            volNote = ` Volume-to-cap ratio is strong (${(volRatio * 100).toFixed(0)}%) - that's a healthy sign of active trading.`;
-          } else if (volRatio && volRatio > 0.1) {
-            volNote = ` Volume is moderate relative to market cap.`;
-          } else if (volRatio) {
-            volNote = ` Volume is currently low relative to its market cap - watch for a volume spike.`;
-          }
-
-          const disclaimer = `\n\n💡 This is on-chain market data. Always do your own research.`;
-
-          return {
-            text: `📊 ${symbol} Analysis:\n\nPrice: ${dollars(d.price)} (${chgTxt})\nMkt Cap: ${dollars(d.mcap)}\n24h Volume: ${dollars(d.vol)}\nHolders: ${holders}\n\n${outlook}${volNote}${disclaimer}`,
-            link: makeBuyLink(l)
-          };
-        }
-
-        // Plain token lookup (no prediction keywords)
-        const chg  = d.change;
-        const text = `${l.name} (${symbol})\nPrice: ${dollars(d.price)}\n24h Change: ${chg !== null ? (chg>=0?'+':'') + chg.toFixed(2)+'%' : 'n/a'}\nMkt Cap: ${dollars(d.mcap)}\n24h Volume: ${dollars(d.vol)}\nHolders: ${d.holders ? Number(d.holders).toLocaleString() : 'n/a'}\nTVL: ${dollars(d.tvl)}`;
-        return { text, link: makeBuyLink(l) };
-      }
-    }
-
-    // ── Price lookup (checked AFTER token loop so predictions go first) ──────
-    const priceNoiseWords = ['buy','sell','top','my','show','list','set','alert','the',
-                             'what','how','much','does','cost','worth','will','go','is','a',
-                             'million','billion','moon','pump','dump','it','that'];
-    if (priceIntentMatch) {
-      const sym = (priceIntentMatch[1] || '').toLowerCase();
-      if (!priceNoiseWords.includes(sym)) {
-        const launch = findToken(sym);
-        if (launch) {
-          const d = getLaunchData(launch);
-          const symbol = (launch.symbol || '').toUpperCase();
-          const chg = d.change;
-          return {
-            text: `${launch.name} (${symbol})\nPrice: ${dollars(d.price)}\n24h Change: ${chg !== null ? (chg>=0?'+':'') + chg.toFixed(2)+'%' : 'n/a'}\nMkt Cap: ${dollars(d.mcap)}\n24h Volume: ${dollars(d.vol)}`,
-            link: makeBuyLink(launch)
-          };
-        }
-        return { text: `I couldn't find "${sym.toUpperCase()}" on the AQUA Launchpad.`, link: null };
-      }
-    }
-
-    // ── Market-wide stats ──────────────────────────────────────────────────
-    if (/\b(how many|launch count|total tokens?|total launches?)\b/.test(q)) {
-      return { text: `There are ${allLaunches.length} tokens live on the AQUA Launchpad right now.`, link: null };
-    }
-    if (/\b(largest market cap|biggest|highest cap|top by cap)\b/.test(q)) {
-      const top = [...allLaunches].sort((a,b) => (getLaunchData(b).mcap||0) - (getLaunchData(a).mcap||0))[0];
-      return { text: top ? `Largest market cap: ${top.name} (${top.symbol?.toUpperCase()}) at ${dollars(getLaunchData(top).mcap)}.` : 'No data yet.', link: top ? makeBuyLink(top) : null };
-    }
-    if (/\b(highest volume|most volume|most traded|most active)\b/.test(q)) {
-      const top = [...allLaunches].sort((a,b) => (getLaunchData(b).vol||0) - (getLaunchData(a).vol||0))[0];
-      return { text: top ? `Highest 24h volume: ${top.name} (${top.symbol?.toUpperCase()}) at ${dollars(getLaunchData(top).vol)}.` : 'No data yet.', link: top ? makeBuyLink(top) : null };
-    }
-    if (/\b(top gainer|best performer|biggest winner|most gains?|most pumped?)\b/.test(q)) {
-      const top = [...allLaunches].filter(l => getLaunchData(l).change !== null)
-        .sort((a,b) => (getLaunchData(b).change||0) - (getLaunchData(a).change||0))[0];
-      const chg = top ? getLaunchData(top).change : null;
-      return { text: top ? `Top gainer: ${top.name} (${top.symbol?.toUpperCase()}) +${chg?.toFixed(2)}% in 24h.` : 'No change data yet.', link: top ? makeBuyLink(top) : null };
-    }
-    if (/\b(top loser|biggest loss|most down|worst performer|dumped)\b/.test(q)) {
-      const bot = [...allLaunches].filter(l => getLaunchData(l).change !== null)
-        .sort((a,b) => (getLaunchData(a).change||0) - (getLaunchData(b).change||0))[0];
-      const chg = bot ? getLaunchData(bot).change : null;
-      return { text: bot ? `Biggest drop: ${bot.name} (${bot.symbol?.toUpperCase()}) ${chg?.toFixed(2)}% in 24h.` : 'No change data yet.', link: null };
-    }
-    if (/\b(market status|market overview|how('?s| is) the market|overall|general)\b/.test(q)) {
-      const gainers = allLaunches.filter(l => (getLaunchData(l).change || 0) > 0).length;
-      const losers  = allLaunches.filter(l => (getLaunchData(l).change || 0) < 0).length;
-      const totalVol = allLaunches.reduce((acc, l) => acc + (getLaunchData(l).vol || 0), 0);
-      const sentiment = gainers > losers ? 'Bullish' : gainers < losers ? 'Bearish' : 'Mixed';
-      return { text: `AQUA Launchpad Market Overview:\n${sentiment} - ${gainers} tokens up, ${losers} down\nTotal 24h Volume: ${dollars(totalVol)}\nTokens tracked: ${allLaunches.length}`, link: null };
-    }
-    if (/\b(most holders?|largest community|most popular by holders?)\b/.test(q)) {
-      const top = [...allLaunches].sort((a,b) => (getLaunchData(b).holders||0) - (getLaunchData(a).holders||0))[0];
-      return { text: top ? `Most holders: ${top.name} (${top.symbol?.toUpperCase()}) with ${Number(getLaunchData(top).holders).toLocaleString()} holders.` : 'No holder data yet.', link: top ? makeBuyLink(top) : null };
-    }
-    if (/\b(newest|latest|most recent|just launched|new token)\b/.test(q)) {
-      const newest = [...allLaunches].sort((a,b) => (b.launchedAt||b.createdAt||0) - (a.launchedAt||a.createdAt||0))[0];
-      return { text: newest ? `Most recent launch: ${newest.name} (${newest.symbol?.toUpperCase()}) at ${dollars(getLaunchData(newest).price)}.` : 'No data.', link: newest ? makeBuyLink(newest) : null };
-    }
-
-    if (/^help$|what can you do|what do you know|commands/.test(q)) {
-      return { text: `I can help you with:\n• "price of [token]" - live price\n• "[token] analysis" - full breakdown\n• "is [token] going to moon?" - honest outlook\n• top gainers / top losers\n• highest volume / largest market cap\n• market overview / market status\n• "buy [token]" - swap via Jupiter\n• most holders / newest launch`, link: null };
-    }
-
-    // ── General AQUA Launchpad questions ──────────────────────────────────
-    if (/\b(what is aqua|what is aquafamily|how does aqua work|aqua launchpad|about aqua)\b/.test(q)) {
-      return { text: `AQUA Launchpad is a Solana-based token launchpad built on top of Orca's concentrated liquidity AMM (CLMM). It lets anyone create and launch tokens with deep on-chain liquidity from day one. Unlike typical bonding-curve launchpads, AQUA tokens graduate into real Orca liquidity pools.`, link: null };
-    }
-    if (/\b(solana|sol network|what chain|blockchain)\b/.test(q)) {
-      return { text: `AQUA Launchpad runs on Solana - one of the fastest blockchains in the world with near-instant transactions and very low fees. All tokens here are Solana SPL tokens tradeable with any Solana wallet.`, link: null };
-    }
-
-    // ── Fallback ──────────────────────────────────────────────────────────
-    return { text: `I'm not sure what you mean by "${raw}". Try asking:\n• price of [token]\n• is [token] going to moon?\n• top gainers\n• market overview\n• buy [token]`, link: null };
+    agentState = newState;
   }
 
   $('askForm')?.addEventListener('submit', e => {
@@ -1005,8 +762,7 @@
     addMessage(text, 'user');
     input.value = '';
     setTimeout(() => {
-      const { text: reply, link } = agentReply(text);
-      addMessage(reply, 'agent', link);
+      dispatchMessage(text);
     }, 220);
   });
 
@@ -1015,8 +771,7 @@
       const prompt = btn.dataset.prompt || btn.textContent.trim();
       addMessage(prompt, 'user');
       setTimeout(() => {
-        const { text, link } = agentReply(prompt);
-        addMessage(text, 'agent', link);
+        dispatchMessage(prompt);
       }, 220);
     });
   });
