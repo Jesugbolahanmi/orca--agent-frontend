@@ -98,7 +98,7 @@
       return { intent:'most_holders', entities:{}, confidence:'high' };
     if (/\b(newest|latest launch|most recent launch|just launched|new token)\b/.test(q))
       return { intent:'newest_launch', entities:{}, confidence:'high' };
-    if (/\b(how many tokens|launch count|total tokens|total launches|number of tokens)\b/.test(q))
+    if (/\b(how many tokens|how many launches|launch count|total tokens|total launches|number of tokens)\b/.test(q))
       return { intent:'launch_count', entities:{}, confidence:'high' };
     if (/\b(what is aqua|how does aqua work|aqua launchpad|about aqua|how does this work)\b/.test(q))
       return { intent:'how_it_works', entities:{}, confidence:'high' };
