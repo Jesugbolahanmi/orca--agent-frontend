@@ -636,10 +636,11 @@
   async function refresh() {
     const ok = await fetchData();
     if (!ok) return;
-
     if (isFirstRun) {
       const historicalEvents = [];
       const now = Date.now();
+      
+      const valid = [];
 
       launches.forEach(l => {
         const d    = live(l);
@@ -660,28 +661,42 @@
             ts: tsMs,
           });
         }
-        if (d.change !== null && d.change >= 10) {
-          historicalEvents.push({
-            type: 'spike', icon: '🚀', label: 'Top Gainer',
-            mint, sym, name: l.name,
-            desc: `${sym} is up ${d.change.toFixed(1)}% today`,
-            value: fmtUsd(d.price), ts: now - Math.floor(Math.random() * 3600000),
-          });
-        }
-        if (d.change !== null && d.change <= -10) {
-          historicalEvents.push({
-            type: 'crash', icon: '🩸', label: 'Big Drop',
-            mint, sym, name: l.name,
-            desc: `${sym} fell ${Math.abs(d.change).toFixed(1)}% today`,
-            value: fmtUsd(d.price), ts: now - Math.floor(Math.random() * 3600000),
-          });
-        }
-        if (d.vol !== null && d.vol >= 5000) {
+        
+        valid.push({ l, d, mint, sym });
+      });
+
+      // Sort by change and take top 3 gainers / top 3 losers
+      const withChange = valid.filter(x => x.d.change !== null).sort((a, b) => b.d.change - a.d.change);
+      const gainers = withChange.filter(x => x.d.change > 0).slice(0, 3);
+      const losers  = withChange.filter(x => x.d.change < 0).slice(-3);
+
+      gainers.forEach(x => {
+        historicalEvents.push({
+          type: 'spike', icon: '🚀', label: 'Top Gainer',
+          mint: x.mint, sym: x.sym, name: x.l.name,
+          desc: `${x.sym} is up ${x.d.change.toFixed(1)}% today`,
+          value: fmtUsd(x.d.price), ts: now - Math.floor(Math.random() * 3600000),
+        });
+      });
+
+      losers.forEach(x => {
+        historicalEvents.push({
+          type: 'crash', icon: '🩸', label: 'Big Drop',
+          mint: x.mint, sym: x.sym, name: x.l.name,
+          desc: `${x.sym} fell ${Math.abs(x.d.change).toFixed(1)}% today`,
+          value: fmtUsd(x.d.price), ts: now - Math.floor(Math.random() * 3600000),
+        });
+      });
+
+      // Sort by volume and take top 3
+      const withVol = valid.filter(x => x.d.vol !== null).sort((a, b) => b.d.vol - a.d.vol).slice(0, 3);
+      withVol.forEach(x => {
+        if (x.d.vol > 0) {
           historicalEvents.push({
             type: 'volume', icon: '🐳', label: 'High Volume',
-            mint, sym, name: l.name,
-            desc: `${sym} is seeing heavy trading activity`,
-            value: fmtUsd(d.vol), ts: now - Math.floor(Math.random() * 7200000),
+            mint: x.mint, sym: x.sym, name: x.l.name,
+            desc: `${x.sym} is seeing heavy trading activity`,
+            value: fmtUsd(x.d.vol), ts: now - Math.floor(Math.random() * 7200000),
           });
         }
       });
