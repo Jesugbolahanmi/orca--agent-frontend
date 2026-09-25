@@ -649,28 +649,28 @@
         snapshot.set(mint, { price: d.price, vol: d.vol, holders: d.holders, change: d.change });
         if (d.price !== null) sessionHigh.set(mint, d.price);
 
-        const ts = l.launchedAt || l.createdAt || 0;
-        const ageMs = now - new Date(ts).getTime();
+        const tsMs = l.launchedAt ? l.launchedAt * 1000 : (l.createdAt || 0);
+        const ageMs = now - tsMs;
         
-        if (ageMs > 0 && ageMs < 72 * 3600000) {
+        if (ageMs > 0 && ageMs < 30 * 86400000) {
           historicalEvents.push({
             type: 'launch', icon: '🆕', label: 'Recent Launch',
             mint, sym, name: l.name,
             desc: `${l.name || sym} launched on AQUA Launchpad`,
-            ts: new Date(ts).getTime(),
+            ts: tsMs,
           });
         }
-        if (d.change !== null && d.change >= 30) {
+        if (d.change !== null && d.change >= 10) {
           historicalEvents.push({
-            type: 'spike', icon: '🚀', label: '24h Top Gainer',
+            type: 'spike', icon: '🚀', label: 'Top Gainer',
             mint, sym, name: l.name,
             desc: `${sym} is up ${d.change.toFixed(1)}% today`,
             value: fmtUsd(d.price), ts: now - Math.floor(Math.random() * 3600000),
           });
         }
-        if (d.change !== null && d.change <= -30) {
+        if (d.change !== null && d.change <= -10) {
           historicalEvents.push({
-            type: 'crash', icon: '🩸', label: '24h Big Drop',
+            type: 'crash', icon: '🩸', label: 'Big Drop',
             mint, sym, name: l.name,
             desc: `${sym} fell ${Math.abs(d.change).toFixed(1)}% today`,
             value: fmtUsd(d.price), ts: now - Math.floor(Math.random() * 3600000),
