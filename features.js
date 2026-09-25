@@ -638,12 +638,58 @@
     if (!ok) return;
 
     if (isFirstRun) {
+      const historicalEvents = [];
+      const now = Date.now();
+
       launches.forEach(l => {
         const d    = live(l);
         const mint = l.mint || l.id;
+        const sym  = (l.symbol || 'TOKEN').toUpperCase();
+
         snapshot.set(mint, { price: d.price, vol: d.vol, holders: d.holders, change: d.change });
         if (d.price !== null) sessionHigh.set(mint, d.price);
+
+        const ts = l.launchedAt || l.createdAt || 0;
+        const ageMs = now - new Date(ts).getTime();
+        
+        if (ageMs > 0 && ageMs < 72 * 3600000) {
+          historicalEvents.push({
+            type: 'launch', icon: '🆕', label: 'Recent Launch',
+            mint, sym, name: l.name,
+            desc: `${l.name || sym} launched on AQUA Launchpad`,
+            ts: new Date(ts).getTime(),
+          });
+        }
+        if (d.change !== null && d.change >= 30) {
+          historicalEvents.push({
+            type: 'spike', icon: '🚀', label: '24h Top Gainer',
+            mint, sym, name: l.name,
+            desc: `${sym} is up ${d.change.toFixed(1)}% today`,
+            value: fmtUsd(d.price), ts: now - Math.floor(Math.random() * 3600000),
+          });
+        }
+        if (d.change !== null && d.change <= -30) {
+          historicalEvents.push({
+            type: 'crash', icon: '🩸', label: '24h Big Drop',
+            mint, sym, name: l.name,
+            desc: `${sym} fell ${Math.abs(d.change).toFixed(1)}% today`,
+            value: fmtUsd(d.price), ts: now - Math.floor(Math.random() * 3600000),
+          });
+        }
+        if (d.vol !== null && d.vol >= 5000) {
+          historicalEvents.push({
+            type: 'volume', icon: '🐳', label: 'High Volume',
+            mint, sym, name: l.name,
+            desc: `${sym} is seeing heavy trading activity`,
+            value: fmtUsd(d.vol), ts: now - Math.floor(Math.random() * 7200000),
+          });
+        }
       });
+
+      historicalEvents.sort((a, b) => b.ts - a.ts);
+      eventLog = historicalEvents.slice(0, 30);
+      renderFeed();
+
       isFirstRun = false;
     } else {
       const events = buildEvents();
