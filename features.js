@@ -681,6 +681,7 @@
       const head = card.querySelector('.token-head');
       if (head) head.appendChild(btn);
     });
+    updateCardValues();
   }
 
   function updateAllStars() {
@@ -693,6 +694,33 @@
     });
   }
 
+  function updateCardValues() {
+    $$('.token-card').forEach(card => {
+      const nameEl = card.querySelector('.token-name');
+      const symEl  = card.querySelector('.token-symbol');
+      if (!nameEl || !symEl) return;
+      const cardName = nameEl.textContent.trim();
+      const cardSym  = symEl.textContent.trim();
+      
+      const launch = launches.find(x =>
+        (x.name   || '').trim()              === cardName ||
+        (x.symbol || '').toUpperCase().trim() === cardSym
+      );
+      if (!launch || !launch.mint) return;
+
+      if (dexMap.has(launch.mint)) {
+        const changeVal = dexMap.get(launch.mint);
+        const changeEl = card.querySelector('.change');
+        if (changeEl) {
+          const changeClass = changeVal >= 0 ? ' up' : ' down';
+          const changeText = (changeVal >= 0 ? '+' : '') + changeVal.toFixed(2) + '% 24h';
+          changeEl.className = 'change' + changeClass;
+          changeEl.textContent = changeText;
+        }
+      }
+    });
+  }
+
   /* ── Main Refresh Loop ──────────────────────────────────────────────────── */
   async function refresh() {
     const ok = await fetchData();
@@ -700,6 +728,9 @@
 
     // Fetch accurate 24h changes from DexScreener before rendering anything
     await fetchDexChanges();
+    
+    // Update main market grid cards
+    updateCardValues();
 
     if (isFirstRun) {
       const historicalEvents = [];
