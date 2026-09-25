@@ -202,7 +202,7 @@
         switchTab('agent');
         const input = $('askInput');
         if (input) {
-          input.value = 'price of ' + (found.symbol || found.name || '');
+          input.value = 'price of ' + (found.symbol || '');
           input.focus();
         }
       });
@@ -356,10 +356,10 @@
 
     list.querySelectorAll('.fe-ask-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const name = btn.dataset.name || btn.dataset.sym;
+        const sym = btn.dataset.sym;
         switchTab('agent');
         const input = $('askInput');
-        if (input) { input.value = 'price of ' + name; input.focus(); }
+        if (input) { input.value = 'price of ' + sym; input.focus(); }
       });
     });
   }
