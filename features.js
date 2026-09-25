@@ -137,7 +137,6 @@
       if (d.holders  !== null) maxH = Math.max(maxH, d.holders);
     });
 
-    // Guard against divide-by-zero
     if (!maxC) maxC = 1;
     if (!maxV) maxV = 1;
     if (!maxH) maxH = 1;
@@ -223,10 +222,9 @@
       const d    = live(l);
       const mint = l.mint || l.id;
       const sym  = (l.symbol || 'TOKEN').toUpperCase();
-      const prev = snapshot.get(mint);   // undefined on very first run after seed
+      const prev = snapshot.get(mint);
 
       if (!prev) {
-        // Token didn't exist in previous snapshot → genuinely new launch
         events.push({
           type: 'launch', icon: '🆕', label: 'New Launch',
           mint, sym, name: l.name,
@@ -234,7 +232,6 @@
           ts: Date.now(),
         });
       } else {
-        // ── Price spike ≥ +30% ─────────────────────────────────────────────
         if (d.change !== null && d.change >= 30
             && (prev.change === null || prev.change < 30)) {
           events.push({
@@ -244,7 +241,6 @@
             value: fmtUsd(d.price), ts: Date.now(),
           });
         }
-        // ── Price crash ≤ -30% ─────────────────────────────────────────────
         if (d.change !== null && d.change <= -30
             && (prev.change === null || prev.change > -30)) {
           events.push({
@@ -254,7 +250,6 @@
             value: fmtUsd(d.price), ts: Date.now(),
           });
         }
-        // ── Volume surge ≥ 2× ──────────────────────────────────────────────
         if (d.vol !== null && prev.vol !== null && prev.vol > 0
             && d.vol >= prev.vol * 2 && d.vol > 500) {
           events.push({
@@ -264,7 +259,6 @@
             value: fmtUsd(d.vol), ts: Date.now(),
           });
         }
-        // ── Holder milestones ──────────────────────────────────────────────
         if (d.holders !== null && prev.holders !== null) {
           MILESTONES.forEach(m => {
             if (prev.holders < m && d.holders >= m) {
@@ -277,7 +271,6 @@
             }
           });
         }
-        // ── Session high ───────────────────────────────────────────────────
         const prevHigh = sessionHigh.get(mint) || 0;
         if (d.price !== null && d.price > prevHigh && prevHigh > 0) {
           events.push({
@@ -333,33 +326,33 @@
       : eventLog.filter(e => e.type === feedFilter);
 
     if (!filtered.length) {
-      list.innerHTML = \`
+      list.innerHTML = `
         <div class="feed-empty">
           <div class="feed-empty-glow"></div>
           <span class="feed-empty-icon">👁</span>
           <p class="feed-empty-title">Watching the market…</p>
           <span class="feed-empty-sub">Events will appear here as they happen. Market refreshes every 90 seconds.</span>
-        </div>\`;
+        </div>`;
       return;
     }
 
-    list.innerHTML = filtered.map(ev => \`
-      <div class="feed-event fe-\${ev.type}" role="listitem">
-        <div class="fe-icon-wrap"><span class="fe-icon">\${ev.icon}</span></div>
+    list.innerHTML = filtered.map(ev => `
+      <div class="feed-event fe-${ev.type}" role="listitem">
+        <div class="fe-icon-wrap"><span class="fe-icon">${ev.icon}</span></div>
         <div class="fe-body">
           <div class="fe-header">
-            <span class="fe-label fe-label-\${ev.type}">\${ev.label}</span>
-            <span class="fe-sym">\${ev.sym}</span>
-            <span class="fe-time">\${timeAgo(ev.ts)}</span>
+            <span class="fe-label fe-label-${ev.type}">${ev.label}</span>
+            <span class="fe-sym">${ev.sym}</span>
+            <span class="fe-time">${timeAgo(ev.ts)}</span>
           </div>
-          <p class="fe-desc">\${ev.desc}</p>
-          \${ev.value ? \`<span class="fe-val">\${ev.value}</span>\` : ''}
+          <p class="fe-desc">${ev.desc}</p>
+          ${ev.value ? `<span class="fe-val">${ev.value}</span>` : ''}
         </div>
         <button class="fe-ask-btn"
-                data-sym="\${ev.sym}"
-                data-name="\${ev.name || ev.sym}"
-                title="Ask ORCAGENT about \${ev.sym}">Ask →</button>
-      </div>\`).join('');
+                data-sym="${ev.sym}"
+                data-name="${ev.name || ev.sym}"
+                title="Ask ORCAGENT about ${ev.sym}">Ask →</button>
+      </div>`).join('');
 
     list.querySelectorAll('.fe-ask-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -427,7 +420,7 @@
       dirty = true;
 
       const sym = (entry.symbol || '').toUpperCase();
-      const msg = \`\${sym} is \${entry.alert.dir === 'above' ? 'above' : 'below'} \${fmtUsd(entry.alert.price)} — now \${fmtUsd(d.price)}\`;
+      const msg = `${sym} is ${entry.alert.dir === 'above' ? 'above' : 'below'} ${fmtUsd(entry.alert.price)} — now ${fmtUsd(d.price)}`;
 
       if (Notification.permission === 'granted') {
         try { new Notification('🔔 ORCAGENT Price Alert', { body: msg, icon: './favicon.jpg', tag: mint + 'alert' }); }
@@ -469,39 +462,39 @@
       const chTxt = ch !== null ? (ch >= 0 ? '+' : '') + ch.toFixed(2) + '%' : '—';
       const chCls = ch === null ? '' : ch >= 0 ? 'wl-up' : 'wl-dn';
       const al   = w.alert;
-      return \`
-        <div class="wl-row" data-mint="\${mint}">
+      return `
+        <div class="wl-row" data-mint="${mint}">
           <div class="wl-tok">
-            <div class="wl-av">\${sym.slice(0, 3) || '?'}</div>
+            <div class="wl-av">${sym.slice(0, 3) || '?'}</div>
             <div class="wl-tok-info">
-              <span class="wl-sym">\${sym || '—'}</span>
-              <span class="wl-nm">\${w.name || ''}</span>
+              <span class="wl-sym">${sym || '—'}</span>
+              <span class="wl-nm">${w.name || ''}</span>
             </div>
           </div>
           <div class="wl-prices">
-            <span class="wl-px">\${fmtUsd(px)}</span>
-            <span class="wl-ch \${chCls}">\${chTxt}</span>
+            <span class="wl-px">${fmtUsd(px)}</span>
+            <span class="wl-ch ${chCls}">${chTxt}</span>
           </div>
           <div class="wl-al-cell">
-            \${al && !al.fired
-              ? \`<span class="wl-al-active" title="Alert set">\${al.dir === 'above' ? '↑' : '↓'} \${fmtUsd(al.price)}</span>\`
+            ${al && !al.fired
+              ? `<span class="wl-al-active" title="Alert set">${al.dir === 'above' ? '↑' : '↓'} ${fmtUsd(al.price)}</span>`
               : al && al.fired
-                ? \`<span class="wl-al-fired" title="Alert triggered">✓ Fired</span>\`
-                : \`<button class="wl-add-al" data-mint="\${mint}">+ Alert</button>\`
+                ? `<span class="wl-al-fired" title="Alert triggered">✓ Fired</span>`
+                : `<button class="wl-add-al" data-mint="${mint}">+ Alert</button>`
             }
           </div>
-          <button class="wl-rm" data-mint="\${mint}" aria-label="Remove \${sym} from watchlist">✕</button>
-        </div>\`;
+          <button class="wl-rm" data-mint="${mint}" aria-label="Remove ${sym} from watchlist">✕</button>
+        </div>`;
     }).join('');
 
-    sec.innerHTML = \`
+    sec.innerHTML = `
       <div class="wl-wrap">
         <div class="wl-head">
           <span class="wl-title">⭐ Watchlist</span>
-          <span class="wl-badge">\${keys.length}</span>
+          <span class="wl-badge">${keys.length}</span>
         </div>
-        <div class="wl-table" role="list">\${rows}</div>
-      </div>\`;
+        <div class="wl-table" role="list">${rows}</div>
+      </div>`;
 
     sec.querySelectorAll('.wl-rm').forEach(b => {
       b.addEventListener('click', () => {
@@ -534,16 +527,16 @@
     modal.className = 'feat-alert-modal';
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-label', \`Set price alert for \${sym}\`);
+    modal.setAttribute('aria-label', `Set price alert for ${sym}`);
 
-    modal.innerHTML = \`
+    modal.innerHTML = `
       <div class="fam-backdrop"></div>
       <div class="fam-box">
         <div class="fam-head">
-          <span class="fam-title">🔔 Set Alert · <strong>\${sym}</strong></span>
+          <span class="fam-title">🔔 Set Alert · <strong>${sym}</strong></span>
           <button class="fam-close" aria-label="Close alert modal">×</button>
         </div>
-        \${px !== null ? \`<p class="fam-current">Current price: <strong>\${fmtUsd(px)}</strong></p>\` : ''}
+        ${px !== null ? `<p class="fam-current">Current price: <strong>${fmtUsd(px)}</strong></p>` : ''}
         <div class="fam-dirs">
           <label class="fam-opt">
             <input type="radio" name="famDir" value="above" checked>
@@ -558,7 +551,7 @@
                type="number" placeholder="Target price (e.g. 0.05)"
                step="any" min="0" autocomplete="off">
         <button class="fam-confirm" id="famConfirm">Set Alert</button>
-      </div>\`;
+      </div>`;
 
     document.body.appendChild(modal);
 
