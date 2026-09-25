@@ -75,12 +75,14 @@
   /* ── DexScreener: fetch real 24h change ────────────────────────────────── */
   async function fetchDexChanges() {
     if (!launches.length) return;
-    const mints = launches.map(l => l.mint).filter(Boolean);
+    const mints = Array.from(new Set(launches.map(l => l.mint).filter(Boolean)));
     const BATCH = 30;
     const newMap = new Map();
     try {
       for (let i = 0; i < mints.length; i += BATCH) {
-        const slice = mints.slice(i, i + BATCH).join(',');
+        const batchSlice = mints.slice(i, i + BATCH);
+        const batchSet = new Set(batchSlice);
+        const slice = batchSlice.join(',');
         const r = await fetch(
           `https://api.dexscreener.com/latest/dex/tokens/${slice}`,
           { headers: { 'Accept': 'application/json' } }
@@ -89,12 +91,14 @@
         const data = await r.json();
         const pairs = data.pairs || [];
 
-        // Group pairs by base token mint
         const byMint = new Map();
         pairs.forEach(p => {
-          const addr = p.baseToken?.address;
+          let addr = p.baseToken?.address;
+          if (!batchSet.has(addr) && batchSet.has(p.quoteToken?.address)) {
+            addr = p.quoteToken?.address;
+          }
           if (!addr || p.priceChange?.h24 === undefined) return;
-          // Keep the pair with the highest USD liquidity for this token
+          
           const existing = byMint.get(addr);
           const liq = p.liquidity?.usd || 0;
           if (!existing || liq > (existing.liquidity?.usd || 0)) {
@@ -107,7 +111,6 @@
           if (ch !== undefined && ch !== null) newMap.set(mint, Number(ch));
         });
 
-        // Small delay to be polite to DexScreener's rate limiter
         if (i + BATCH < mints.length) await new Promise(r => setTimeout(r, 300));
       }
       dexMap = newMap;
