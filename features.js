@@ -17,6 +17,18 @@
   const MAX_EVENTS = 80;           // cap event log length
   const MILESTONES = [10, 25, 50, 100, 250, 500, 1000];
 
+  const ICONS = {
+    fire: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>',
+    zap: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+    chartUp: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+    chartDown: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>',
+    snow: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 2v20M2 12h20M19 5l-14 14M5 5l14 14"/></svg>',
+    launch: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+    volume: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>',
+    users: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    eye: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+  };
+
   /* ── Module State ───────────────────────────────────────────────────────── */
   let launches    = [];
   let pricesMap   = new Map();     // launchId → price object from API
@@ -120,10 +132,10 @@
      FEATURE 1 — HEAT SCORE LEADERBOARD
   ========================================================================= */
   function heatTier(score) {
-    if (score >= 75) return { icon: '🔥', label: 'On Fire',    cls: 'ht-fire' };
-    if (score >= 50) return { icon: '⚡', label: 'Heating Up', cls: 'ht-hot'  };
-    if (score >= 25) return { icon: '📈', label: 'Warming',    cls: 'ht-warm' };
-    return              { icon: '❄️', label: 'Cold',        cls: 'ht-cold' };
+    if (score >= 75) return { icon: ICONS.fire, label: 'On Fire',    cls: 'ht-fire' };
+    if (score >= 50) return { icon: ICONS.zap, label: 'Heating Up', cls: 'ht-hot'  };
+    if (score >= 25) return { icon: ICONS.chartUp, label: 'Warming',    cls: 'ht-warm' };
+    return              { icon: ICONS.snow, label: 'Cold',        cls: 'ht-cold' };
   }
 
   function computeScores() {
@@ -187,7 +199,7 @@
     strip.innerHTML = `
       <div class="hs-header">
         <div class="hs-title-block">
-          <span class="hs-title">🔥 Trending Now</span>
+          <span class="hs-title">Trending Now</span>
           <span class="hs-sub">ORCAGENT Heat Score™</span>
         </div>
         <button class="hs-see-all" id="hsSeeAll">See all →</button>
@@ -226,7 +238,7 @@
 
       if (!prev) {
         events.push({
-          type: 'launch', icon: '🆕', label: 'New Launch',
+          type: 'launch', icon: ICONS.launch, label: 'New Launch',
           mint, sym, name: l.name,
           desc: `${l.name || sym} just launched on AQUA Launchpad`,
           ts: Date.now(),
@@ -235,7 +247,7 @@
         if (d.change !== null && d.change >= 30
             && (prev.change === null || prev.change < 30)) {
           events.push({
-            type: 'spike', icon: '🚀', label: 'Price Spike',
+            type: 'spike', icon: ICONS.chartUp, label: 'Price Spike',
             mint, sym, name: l.name,
             desc:  `${sym} surged ${d.change.toFixed(1)}% in the last 24h`,
             value: fmtUsd(d.price), ts: Date.now(),
@@ -244,7 +256,7 @@
         if (d.change !== null && d.change <= -30
             && (prev.change === null || prev.change > -30)) {
           events.push({
-            type: 'crash', icon: '🩸', label: 'Price Drop',
+            type: 'crash', icon: ICONS.chartDown, label: 'Price Drop',
             mint, sym, name: l.name,
             desc:  `${sym} fell ${Math.abs(d.change).toFixed(1)}% in the last 24h`,
             value: fmtUsd(d.price), ts: Date.now(),
@@ -253,7 +265,7 @@
         if (d.vol !== null && prev.vol !== null && prev.vol > 0
             && d.vol >= prev.vol * 2 && d.vol > 500) {
           events.push({
-            type: 'volume', icon: '🐳', label: 'Volume Surge',
+            type: 'volume', icon: ICONS.volume, label: 'Volume Surge',
             mint, sym, name: l.name,
             desc:  `${sym} volume spiked to ${fmtUsd(d.vol)} — ${(d.vol / prev.vol).toFixed(1)}× jump`,
             value: fmtUsd(d.vol), ts: Date.now(),
@@ -263,7 +275,7 @@
           MILESTONES.forEach(m => {
             if (prev.holders < m && d.holders >= m) {
               events.push({
-                type: 'holders', icon: '👥', label: 'Holder Milestone',
+                type: 'holders', icon: ICONS.users, label: 'Holder Milestone',
                 mint, sym, name: l.name,
                 desc:  `${sym} crossed ${m.toLocaleString()} holders`,
                 value: d.holders.toLocaleString() + ' holders', ts: Date.now(),
@@ -274,7 +286,7 @@
         const prevHigh = sessionHigh.get(mint) || 0;
         if (d.price !== null && d.price > prevHigh && prevHigh > 0) {
           events.push({
-            type: 'ath', icon: '📈', label: 'Session High',
+            type: 'ath', icon: ICONS.chartUp, label: 'Session High',
             mint, sym, name: l.name,
             desc:  `${sym} hit a new session high`,
             value: fmtUsd(d.price), ts: Date.now(),
@@ -329,7 +341,7 @@
       list.innerHTML = `
         <div class="feed-empty">
           <div class="feed-empty-glow"></div>
-          <span class="feed-empty-icon">👁</span>
+          <span class="feed-empty-icon">${ICONS.eye}</span>
           <p class="feed-empty-title">Watching the market…</p>
           <span class="feed-empty-sub">Events will appear here as they happen. Market refreshes every 90 seconds.</span>
         </div>`;
@@ -423,10 +435,10 @@
       const msg = `${sym} is ${entry.alert.dir === 'above' ? 'above' : 'below'} ${fmtUsd(entry.alert.price)} — now ${fmtUsd(d.price)}`;
 
       if (Notification.permission === 'granted') {
-        try { new Notification('🔔 ORCAGENT Price Alert', { body: msg, icon: './favicon.jpg', tag: mint + 'alert' }); }
+        try { new Notification('ORCAGENT Price Alert', { body: msg, icon: './favicon.jpg', tag: mint + 'alert' }); }
         catch (_) {}
       }
-      showBanner('🔔 ' + msg);
+      showBanner('Alert: ' + msg);
     });
     if (dirty) saveWatchlist();
   }
@@ -490,7 +502,7 @@
     sec.innerHTML = `
       <div class="wl-wrap">
         <div class="wl-head">
-          <span class="wl-title">⭐ Watchlist</span>
+          <span class="wl-title">Watchlist</span>
           <span class="wl-badge">${keys.length}</span>
         </div>
         <div class="wl-table" role="list">${rows}</div>
@@ -533,7 +545,7 @@
       <div class="fam-backdrop"></div>
       <div class="fam-box">
         <div class="fam-head">
-          <span class="fam-title">🔔 Set Alert · <strong>${sym}</strong></span>
+          <span class="fam-title">Set Alert · <strong>${sym}</strong></span>
           <button class="fam-close" aria-label="Close alert modal">×</button>
         </div>
         ${px !== null ? `<p class="fam-current">Current price: <strong>${fmtUsd(px)}</strong></p>` : ''}
@@ -655,7 +667,7 @@
         
         if (ageMs > 0 && ageMs < 30 * 86400000) {
           historicalEvents.push({
-            type: 'launch', icon: '🆕', label: 'Recent Launch',
+            type: 'launch', icon: ICONS.launch, label: 'Recent Launch',
             mint, sym, name: l.name,
             desc: `${l.name || sym} launched on AQUA Launchpad`,
             ts: tsMs,
@@ -672,7 +684,7 @@
 
       gainers.forEach(x => {
         historicalEvents.push({
-          type: 'spike', icon: '🚀', label: 'Top Gainer',
+          type: 'spike', icon: ICONS.chartUp, label: 'Top Gainer',
           mint: x.mint, sym: x.sym, name: x.l.name,
           desc: `${x.sym} is up ${x.d.change.toFixed(1)}% today`,
           value: fmtUsd(x.d.price), ts: now - Math.floor(Math.random() * 3600000),
@@ -681,7 +693,7 @@
 
       losers.forEach(x => {
         historicalEvents.push({
-          type: 'crash', icon: '🩸', label: 'Big Drop',
+          type: 'crash', icon: ICONS.chartDown, label: 'Big Drop',
           mint: x.mint, sym: x.sym, name: x.l.name,
           desc: `${x.sym} fell ${Math.abs(x.d.change).toFixed(1)}% today`,
           value: fmtUsd(x.d.price), ts: now - Math.floor(Math.random() * 3600000),
@@ -693,7 +705,7 @@
       withVol.forEach(x => {
         if (x.d.vol > 0) {
           historicalEvents.push({
-            type: 'volume', icon: '🐳', label: 'High Volume',
+            type: 'volume', icon: ICONS.volume, label: 'High Volume',
             mint: x.mint, sym: x.sym, name: x.l.name,
             desc: `${x.sym} is seeing heavy trading activity`,
             value: fmtUsd(x.d.vol), ts: now - Math.floor(Math.random() * 7200000),
