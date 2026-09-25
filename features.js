@@ -32,6 +32,7 @@
   /* ── Module State ───────────────────────────────────────────────────────── */
   let launches    = [];
   let pricesMap   = new Map();     // launchId → price object from API
+  let dexMap      = new Map();     // mint → real 24h % change from DexScreener
   let snapshot    = new Map();     // mint → { price, vol, holders, change }
   let sessionHigh = new Map();     // mint → highest price seen this session
   let eventLog    = [];
@@ -69,6 +70,50 @@
 
   function saveWatchlist() {
     localStorage.setItem('orca_watchlist', JSON.stringify(watchlist));
+  }
+
+  /* ── DexScreener: fetch real 24h change ────────────────────────────────── */
+  async function fetchDexChanges() {
+    if (!launches.length) return;
+    const mints = launches.map(l => l.mint).filter(Boolean);
+    const BATCH = 30;
+    const newMap = new Map();
+    try {
+      for (let i = 0; i < mints.length; i += BATCH) {
+        const slice = mints.slice(i, i + BATCH).join(',');
+        const r = await fetch(
+          `https://api.dexscreener.com/latest/dex/tokens/${slice}`,
+          { headers: { 'Accept': 'application/json' } }
+        );
+        if (!r.ok) continue;
+        const data = await r.json();
+        const pairs = data.pairs || [];
+
+        // Group pairs by base token mint
+        const byMint = new Map();
+        pairs.forEach(p => {
+          const addr = p.baseToken?.address;
+          if (!addr || p.priceChange?.h24 === undefined) return;
+          // Keep the pair with the highest USD liquidity for this token
+          const existing = byMint.get(addr);
+          const liq = p.liquidity?.usd || 0;
+          if (!existing || liq > (existing.liquidity?.usd || 0)) {
+            byMint.set(addr, p);
+          }
+        });
+
+        byMint.forEach((pair, mint) => {
+          const ch = pair.priceChange?.h24;
+          if (ch !== undefined && ch !== null) newMap.set(mint, Number(ch));
+        });
+
+        // Small delay to be polite to DexScreener's rate limiter
+        if (i + BATCH < mints.length) await new Promise(r => setTimeout(r, 300));
+      }
+      dexMap = newMap;
+    } catch (e) {
+      console.warn('[ORCAGENT Features] DexScreener fetch failed:', e.message);
+    }
   }
 
   /* ── Data Fetch ─────────────────────────────────────────────────────────── */
@@ -113,7 +158,8 @@
       price:   v('priceUsd'),
       mcap:    v('marketCapUsd'),
       vol:     v('volume24hUsd'),
-      change:  v('change24h'),
+      // Prefer DexScreener's h24 change — it's accurate. Fall back to API only if unavailable.
+      change:  dexMap.has(launch.mint) ? dexMap.get(launch.mint) : v('change24h'),
       holders: v('holderCount'),
     };
   }
@@ -648,6 +694,10 @@
   async function refresh() {
     const ok = await fetchData();
     if (!ok) return;
+
+    // Fetch accurate 24h changes from DexScreener before rendering anything
+    await fetchDexChanges();
+
     if (isFirstRun) {
       const historicalEvents = [];
       const now = Date.now();
